@@ -63,6 +63,9 @@ class MainActivity : AppCompatActivity() {
 
     private val faceBmp = Bitmap.createBitmap(112, 112, Bitmap.Config.ARGB_8888)
 
+    private val TF_OD_API_MODEL_FILE = "mobile_face_net.tflite"
+    private val TF_OD_API_LABELS_FILE = "file:///android_asset/labelmap.txt"
+
 
     val highAccuracyOpts = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
