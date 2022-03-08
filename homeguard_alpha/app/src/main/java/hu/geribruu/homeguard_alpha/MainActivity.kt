@@ -1,6 +1,7 @@
 package hu.geribruu.homeguard_alpha
 
 import android.Manifest
+import android.R.attr
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
@@ -40,6 +41,10 @@ import android.graphics.Bitmap
 import android.media.Image
 import hu.geribruu.homeguard_alpha.databinding.ActivityMainBinding
 import java.io.ByteArrayOutputStream
+import android.R.attr.angle
+
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -350,7 +355,13 @@ class ImageAnalyzer(
 //                        val rect = translateRect(bound)
 
                         val bitmap = mediaImage.toBitmap()
-                        var cropped = Bitmap.createBitmap(bitmap, bound.left, bound.top, bound.width(), bound.height())
+//                        var cropped = Bitmap.createBitmap(bitmap, bound.left, bound.top, bound.width(), bound.height())
+
+
+                        val matrix = Matrix()
+                        matrix.postRotate(-90f)
+                        val cropped = Bitmap.createBitmap(
+                            bitmap, bound.top, bound.left, bound.height(), bound.width(), matrix, true)
 
 
                         rec.cropped = cropped
