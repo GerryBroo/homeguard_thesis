@@ -1,7 +1,6 @@
 package hu.geribruu.homeguard_alpha
 
 import android.Manifest
-import android.R.attr
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
@@ -41,9 +40,6 @@ import android.graphics.Bitmap
 import android.media.Image
 import hu.geribruu.homeguard_alpha.databinding.ActivityMainBinding
 import java.io.ByteArrayOutputStream
-import android.R.attr.angle
-
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -57,15 +53,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
 
-    private var rec: Recognation = Recognation(null, null, null)
 
     private lateinit var lastCaptureUrl: String
-
-    private val faceBmp = Bitmap.createBitmap(112, 112, Bitmap.Config.ARGB_8888)
-
-    private val TF_OD_API_MODEL_FILE = "mobile_face_net.tflite"
-    private val TF_OD_API_LABELS_FILE = "file:///android_asset/labelmap.txt"
-
 
     val highAccuracyOpts = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -91,14 +80,11 @@ class MainActivity : AppCompatActivity() {
 
         // Set up the listeners for take photo and video capture buttons
         viewBinding.imageCaptureButton.setOnClickListener { lastCaptureUrl = takePhoto() }
-        viewBinding.imageDialog.setOnClickListener {
-            runOnUiThread {
-                showDialog()
 
-            }
-        }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+
     }
 
     fun getOutputDirectory(): String {
@@ -172,7 +158,7 @@ class MainActivity : AppCompatActivity() {
             val imageAnalyzer = ImageAnalysis.Builder()
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, ImageAnalyzer(this, viewBinding, rec))
+                    it.setAnalyzer(cameraExecutor, ImageAnalyzer(this, viewBinding, this))
                 }
 
             // Select back camera as a default
@@ -194,30 +180,6 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun showDialog() {
-
-        val builder = AlertDialog.Builder(this)
-        val inflater: LayoutInflater = getLayoutInflater()
-        val dialogLayout: View = inflater.inflate(R.layout.image_edit_dialog, null)
-        val ivFace = dialogLayout.findViewById<ImageView>(R.id.dlg_image)
-        val tvTitle = dialogLayout.findViewById<TextView>(R.id.dlg_title)
-        val etName = dialogLayout.findViewById<EditText>(R.id.dlg_input)
-
-        if (rec.bitmap != null) {
-            ivFace.setImageBitmap(rec.cropped)
-        }
-
-
-
-        tvTitle.text = "ivFace is not null"
-        etName.hint = "Input name"
-
-        builder.setPositiveButton("OK", DialogInterface.OnClickListener { dlg, i ->
-
-        })
-        builder.setView(dialogLayout)
-        builder.show()
-    }
 
     fun Image.toBitmap(): Bitmap {
         val yBuffer = planes[0].buffer // Y
@@ -290,7 +252,7 @@ class MainActivity : AppCompatActivity() {
 class ImageAnalyzer(
     private var context: Context,
     private var binding: ActivityMainBinding,
-    private var rec: Recognation
+    private var activity: MainActivity
 ) : ImageAnalysis.Analyzer {
 
     private val faceDetectorOption = FaceDetectorOptions.Builder()
@@ -300,7 +262,36 @@ class ImageAnalyzer(
         .enableTracking()
         .build()
 
+    private val TF_OD_API_MODEL_FILE = "mobile_face_net.tflite"
+    private val TF_OD_API_LABELS_FILE = "file:///android_asset/labelmap.txt"
+    private val TF_OD_API_INPUT_SIZE = 112
+    private val TF_OD_API_IS_QUANTIZED = false
+
+
+    private var detector: SimilarityClassifier = TFLiteObjectDetectionAPIModel.create(
+        activity.assets,
+        TF_OD_API_MODEL_FILE,
+        TF_OD_API_LABELS_FILE,
+        TF_OD_API_INPUT_SIZE,
+        TF_OD_API_IS_QUANTIZED
+    )
+
+    private val faceBmp = Bitmap.createBitmap(112, 112, Bitmap.Config.ARGB_8888)
+
+    private var recNew: SimilarityClassifier.Recognition =
+        SimilarityClassifier.Recognition("0", "Nem ismerem", null, null)
+
+    private var recognations = mutableListOf<SimilarityClassifier.Recognition>()
+
     private val faceDetector = FaceDetection.getClient(faceDetectorOption)
+
+    init {
+        binding.imageDialog.setOnClickListener {
+            activity.runOnUiThread {
+                showDialog()
+            }
+        }
+    }
 
     @SuppressLint("UnsafeExperimentalUsageError", "UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -317,8 +308,7 @@ class ImageAnalyzer(
                     for (face in faces) {
 
                         val bound = face.boundingBox
-                        rec.bitmap = bound
-                        rec.face = face
+//                        rec.face = face
                         //showToast(faces.size, face)
 
                         val targetWidth = 1728
@@ -364,31 +354,51 @@ class ImageAnalyzer(
                         val matrix = Matrix()
                         matrix.postRotate(-90f)
                         val cropped = Bitmap.createBitmap(
-                            bitmap, bound.top, bound.left, bound.height(), bound.width(), matrix, true)
+                            bitmap,
+                            bound.top,
+                            bound.left,
+                            bound.height(),
+                            bound.width(),
+                            matrix,
+                            true
+                        )
 
 
-                        rec.cropped = cropped
+                        recNew.crop = cropped
 
+//
+////                        Log.d("ASD", "LEFT: ${rect.left}")
+////                        Log.d("ASD", "TOP: ${rect.top}")
+////                        Log.d("ASD", "Right: ${rect.right}")
+////                        Log.d("ASD", "Bottom: ${rect.bottom}")
+//                        Log.d("ASD", "====================")
+//                        Log.d("ASD", "BoundBox Left: ${bound.left}")
+//                        Log.d("ASD", "BoundBox Top: ${bound.top}")
+//                        Log.d("ASD", "BoundBox Right: ${bound.right}")
+//                        Log.d("ASD", "BoundBox Bottom: ${bound.bottom}")
+//                        Log.d("ASD", "====================")
+//
 
-//                        Log.d("ASD", "LEFT: ${rect.left}")
-//                        Log.d("ASD", "TOP: ${rect.top}")
-//                        Log.d("ASD", "Right: ${rect.right}")
-//                        Log.d("ASD", "Bottom: ${rect.bottom}")
-                        Log.d("ASD", "====================")
-                        Log.d("ASD", "BoundBox Left: ${bound.left}")
-                        Log.d("ASD", "BoundBox Top: ${bound.top}")
-                        Log.d("ASD", "BoundBox Right: ${bound.right}")
-                        Log.d("ASD", "BoundBox Bottom: ${bound.bottom}")
-                        Log.d("ASD", "====================")
+                        var extra: Any? = null
 
-                        val element = Draw(
-                            context = context,
-                            rect = bound,
-                            text = "Jól nézzel ki!")
-                        binding.mainlayout.addView(element,1)
+                        val resultsAux: List<SimilarityClassifier.Recognition> = detector.recognizeImage(faceBmp, false)
 
-                        val handler = Handler()
-                        handler.postDelayed(Runnable { binding.mainlayout.removeViewAt(1) }, 100)
+                        if (resultsAux.isNotEmpty()) {
+                            for (result in resultsAux) {
+
+                                extra = result.extra
+
+                                val element = Draw(
+                                    context = context,
+                                    rect = bound,
+                                    text = result.title
+                                )
+                                binding.mainlayout.addView(element, 1)
+                            }
+
+                            val handler = Handler()
+                            handler.postDelayed(Runnable { binding.mainlayout.removeViewAt(1) }, 100)
+                        }
 
                     }
 
@@ -400,6 +410,34 @@ class ImageAnalyzer(
                     imageProxy.close()
                 }
         }
+    }
+
+    private fun showDialog() {
+
+        val builder = AlertDialog.Builder(context)
+        val inflater: LayoutInflater = activity.getLayoutInflater()
+        val dialogLayout: View = inflater.inflate(R.layout.image_edit_dialog, null)
+        val ivFace = dialogLayout.findViewById<ImageView>(R.id.dlg_image)
+        val tvTitle = dialogLayout.findViewById<TextView>(R.id.dlg_title)
+        val etName = dialogLayout.findViewById<EditText>(R.id.dlg_input)
+
+//        if (recNew.bitmap != null) {
+//            ivFace.setImageBitmap(recNew.cropped)
+//        }
+
+        if (recNew.crop != null) {
+            ivFace.setImageBitmap(recNew.crop)
+        }
+
+        tvTitle.text = "ivFace is not null"
+        etName.hint = "Input name"
+        val name = etName.text.toString()
+
+        builder.setPositiveButton("OK", DialogInterface.OnClickListener { dlg, i ->
+            detector.register(name, recNew)
+        })
+        builder.setView(dialogLayout)
+        builder.show()
     }
 
     fun Image.toBitmap(): Bitmap {
@@ -433,8 +471,9 @@ class ImageAnalyzer(
     }
 }
 
-data class Recognation(
-    var bitmap: Rect?,
-    var face: Face?,
-    var cropped: Bitmap?
-)
+
+//data class Recognation(
+//    var bitmap: Rect?,
+//    var face: Face?,
+//    var cropped: Bitmap?
+//)

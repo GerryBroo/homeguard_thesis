@@ -4,8 +4,10 @@ import android.content.res.AssetFileDescriptor
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.RectF
+import android.os.IBinder
 import android.os.Trace
 import android.util.Pair
+import org.tensorflow.lite.Interpreter
 import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.IOException
@@ -33,9 +35,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.examples.detection.env.Logger
-
 /**
  * Wrapper for frozen detection models trained using the Tensorflow Object Detection API:
  * - https://github.com/tensorflow/models/tree/master/research/object_detection
@@ -53,31 +52,32 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
 
     // Pre-allocated buffers.
     private val labels = Vector<String>()
-    private var intValues: IntArray
+    private lateinit var intValues: IntArray
 
     // outputLocations: array of shape [Batchsize, NUM_DETECTIONS,4]
     // contains the location of detected boxes
-    private var outputLocations: Array<Array<FloatArray>>
+    private lateinit var outputLocations: Array<Array<FloatArray>>
 
     // outputClasses: array of shape [Batchsize, NUM_DETECTIONS]
     // contains the classes of detected boxes
-    private var outputClasses: Array<FloatArray>
+    private lateinit var outputClasses: Array<FloatArray>
 
     // outputScores: array of shape [Batchsize, NUM_DETECTIONS]
     // contains the scores of detected boxes
-    private var outputScores: Array<FloatArray>
+    private lateinit var outputScores: Array<FloatArray>
 
     // numDetections: array of shape [Batchsize]
     // contains the number of detected boxes
-    private var numDetections: FloatArray
-    private var embeedings: Array<FloatArray>
-    private var imgData: ByteBuffer? = null
-    private var tfLite: Interpreter? = null
+    private lateinit var numDetections: FloatArray
+    private lateinit var embeedings: Array<FloatArray>
+    private lateinit var imgData: ByteBuffer
+    private lateinit var tfLite: Interpreter
 
     // Face Mask Detector Output
-    private val output: Array<FloatArray>
+//    private val output: Array<FloatArray>
+
     private val registered: HashMap<String, SimilarityClassifier.Recognition> = HashMap<String, SimilarityClassifier.Recognition>()
-    fun register(name: String, rec: SimilarityClassifier.Recognition) {
+    override fun register(name: String, rec: SimilarityClassifier.Recognition) {
         registered[name] = rec
     }
 
@@ -86,7 +86,9 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
     private fun findNearest(emb: FloatArray): Pair<String, Float>? {
         var ret: Pair<String, Float>? = null
         for ((name, value) in registered) {
-            val knownEmb = value.getExtra()[0]
+            val knownEmb : FloatArray = ((value.extra) as Array<*>)[0] as FloatArray
+            //todo ki tudja jo e
+
             var distance = 0f
             for (i in emb.indices) {
                 val diff = emb[i] - knownEmb[i]
@@ -99,27 +101,28 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
         }
         return ret
     }
+    //TODO nem v'gom
 
-    fun recognizeImage(bitmap: Bitmap, storeExtra: Boolean): List<SimilarityClassifier.Recognition> {
+    override fun recognizeImage(bitmap: Bitmap, storeExtra: Boolean): List<SimilarityClassifier.Recognition> {
         // Log this method so that it can be analyzed with systrace.
         Trace.beginSection("recognizeImage")
         Trace.beginSection("preprocessBitmap")
         // Preprocess the image data from 0-255 int to normalized float based
         // on the provided parameters.
         bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-        imgData!!.rewind()
+        imgData.rewind()
         for (i in 0 until inputSize) {
             for (j in 0 until inputSize) {
                 val pixelValue = intValues[i * inputSize + j]
                 if (isModelQuantized) {
                     // Quantized model
-                    imgData!!.put((pixelValue shr 16 and 0xFF).toByte())
-                    imgData!!.put((pixelValue shr 8 and 0xFF).toByte())
-                    imgData!!.put((pixelValue and 0xFF).toByte())
+                    imgData.put((pixelValue shr 16 and 0xFF).toByte())
+                    imgData.put((pixelValue shr 8 and 0xFF).toByte())
+                    imgData.put((pixelValue and 0xFF).toByte())
                 } else { // Float model
-                    imgData!!.putFloat(((pixelValue shr 16 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
-                    imgData!!.putFloat(((pixelValue shr 8 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
-                    imgData!!.putFloat(((pixelValue and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
+                    imgData.putFloat(((pixelValue shr 16 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
+                    imgData.putFloat(((pixelValue shr 8 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
+                    imgData.putFloat(((pixelValue and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
                 }
             }
         }
@@ -127,7 +130,9 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
 
         // Copy the input data into TensorFlow.
         Trace.beginSection("feed")
-        val inputArray = arrayOf<Any?>(imgData)
+
+        val inputArray = arrayOf<Any>(imgData)
+
         Trace.endSection()
 
 // Here outputMap is changed to fit the Face Mask detector
@@ -142,7 +147,6 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
 
         // Run the inference call.
         Trace.beginSection("run")
-        //tfLite.runForMultipleInputsOutputs(inputArray, outputMapBack);
         tfLite.runForMultipleInputsOutputs(inputArray, outputMap)
         Trace.endSection()
 
@@ -154,7 +158,7 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
 //    res += "]";
         var distance = Float.MAX_VALUE
         val id = "0"
-        var label: String? = "?"
+        var label: String = "?"
         if (registered.size > 0) {
             //LOGGER.i("dataset SIZE: " + registered.size());
             val nearest = findNearest(embeedings[0])
@@ -162,7 +166,7 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
                 val name = nearest.first
                 label = name
                 distance = nearest.second
-                LOGGER.i("nearest: $name - distance: $distance")
+//                LOGGER.i("nearest: $name - distance: $distance")
             }
         }
         val numDetectionsOutput = 1
@@ -175,7 +179,7 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
         )
         recognitions.add(rec)
         if (storeExtra) {
-            rec.setExtra(embeedings)
+            rec.extra = embeedings as Object
         }
         Trace.endSection()
         return recognitions
@@ -187,15 +191,15 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
 
     override fun close() {}
     override fun setNumThreads(num_threads: Int) {
-        if (tfLite != null) tfLite.setNumThreads(num_threads)
+        tfLite?.setNumThreads(num_threads)
     }
 
     override fun setUseNNAPI(isChecked: Boolean) {
-        if (tfLite != null) tfLite.setUseNNAPI(isChecked)
+        tfLite?.setUseNNAPI(isChecked)
     }
 
     companion object {
-        private val LOGGER: Logger = Logger()
+//        private val LOGGER: Logger = Logger()
 
         //private static final int OUTPUT_SIZE = 512;
         private const val OUTPUT_SIZE = 192
@@ -242,9 +246,9 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
             val actualFilename = labelFilename.split("file:///android_asset/").toTypedArray()[1]
             val labelsInput = assetManager.open(actualFilename)
             val br = BufferedReader(InputStreamReader(labelsInput))
-            var line: String
+            var line: String?
             while (br.readLine().also { line = it } != null) {
-                LOGGER.w(line)
+//                LOGGER.w(line)
                 d.labels.add(line)
             }
             br.close()
@@ -264,9 +268,10 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
             }
             d.imgData =
                 ByteBuffer.allocateDirect(1 * d.inputSize * d.inputSize * 3 * numBytesPerChannel)
-            d.imgData.order(ByteOrder.nativeOrder())
+            d.imgData!!.order(ByteOrder.nativeOrder())
+            //todo nem biztos hogy jo
             d.intValues = IntArray(d.inputSize * d.inputSize)
-            d.tfLite.setNumThreads(NUM_THREADS)
+            d.tfLite!!.setNumThreads(NUM_THREADS)
             d.outputLocations = Array(1) {
                 Array(NUM_DETECTIONS) {
                     FloatArray(

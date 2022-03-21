@@ -1,7 +1,10 @@
 package hu.geribruu.homeguard_alpha
 
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.graphics.RectF
+import com.google.mlkit.vision.face.Face
+
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
@@ -20,8 +23,8 @@ limitations under the License.
 
 /** Generic interface for interacting with different recognition engines.  */
 interface SimilarityClassifier {
-    fun register(name: String?, recognition: Recognition?)
-    fun recognizeImage(bitmap: Bitmap?, getExtra: Boolean): List<Recognition?>?
+    fun register(name: String, recognition: Recognition)
+    fun recognizeImage(bitmap: Bitmap, getExtra: Boolean): List<Recognition>
     fun enableStatLogging(debug: Boolean)
     val statString: String?
 
@@ -37,14 +40,13 @@ interface SimilarityClassifier {
          */
         val id: String?,
         /** Display name for the recognition.  */
-        var title: String?, distance: Float?, location: RectF?
+        var title: String, distance: Float?, location: RectF?
     ) {
-
         /**
          * A sortable score for how good the recognition is relative to others. Lower should be better.
          */
         val distance: Float?
-        var extra: Any?
+        var extra: Object?
 
         /** Optional location within the source image for the location of the recognized object.  */
         private var location: RectF?
