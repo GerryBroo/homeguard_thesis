@@ -87,7 +87,8 @@ class TFLiteObjectDetectionAPIModel private constructor() : SimilarityClassifier
         var ret: Pair<String, Float>? = null
         for ((name, value) in registered) {
             val knownEmb : FloatArray = ((value.extra) as Array<*>)[0] as FloatArray
-            //todo ki tudja jo e
+
+            //todo error:    java.lang.NullPointerException: null cannot be cast to non-null type kotlin.Array<*>
 
             var distance = 0f
             for (i in emb.indices) {
