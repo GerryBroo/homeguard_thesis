@@ -38,6 +38,8 @@ import java.io.File
 
 import android.graphics.Bitmap
 import android.media.Image
+import androidx.core.graphics.toRect
+import androidx.core.graphics.toRectF
 import hu.geribruu.homeguard_alpha.databinding.ActivityMainBinding
 import java.io.ByteArrayOutputStream
 
@@ -278,17 +280,26 @@ class ImageAnalyzer(
 
     private val faceBmp = Bitmap.createBitmap(112, 112, Bitmap.Config.ARGB_8888)
 
-    private var recNew: SimilarityClassifier.Recognition =
-        SimilarityClassifier.Recognition("0", "Nem ismerem", null, null)
+//    private var recNew: SimilarityClassifier.Recognition =
+//        SimilarityClassifier.Recognition("0", "Nem ismerem", null, null)
 
     private var recognations = mutableListOf<SimilarityClassifier.Recognition>()
 
     private val faceDetector = FaceDetection.getClient(faceDetectorOption)
 
+    private var addPending = false
+
+    private val tracker: MultiBoxTracker = MultiBoxTracker(context)
+    var trackingOverlay: OverlayView = activity.findViewById(R.id.tracking_overlay)
+
+
+
     init {
+
         binding.imageDialog.setOnClickListener {
             activity.runOnUiThread {
-                showDialog()
+//                showDialog()
+                onAddClick()
             }
         }
     }
@@ -305,14 +316,43 @@ class ImageAnalyzer(
             faceDetector.process(processImage)
                 .addOnSuccessListener { faces ->
 
-                    for (face in faces) {
+                    if (faces.isEmpty()) {
+                        updateResults(1, emptyList())
+                        return@addOnSuccessListener
+                    }
 
-                        val bound = face.boundingBox
-//                        rec.face = face
-                        //showToast(faces.size, face)
+                    onFacesDetected(1, faces, addPending, mediaImage)
+                    addPending = false
 
-                        val targetWidth = 1728
-                        val targetHeight = 2304
+
+                }
+                .addOnFailureListener {
+                    Log.v("MainActivity", "Error - ${it.message}")
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+        }
+    }
+
+    private fun onFacesDetected(
+        currTimestamp: Long,
+        faces: List<Face>,
+        add: Boolean,
+        mediaImage: Image
+    ) {
+
+        val mappedRecognitions: MutableList<SimilarityClassifier.Recognition> = mutableListOf()
+
+        for (face in faces) {
+
+            val bound = face.boundingBox
+            val boundboxf = face.boundingBox.toRectF()
+//                        rec.faceb = face
+            //showToast(faces.size, face)
+
+            val targetWidth = 1728
+            val targetHeight = 2304
 
 //                        val previewSize = overlayView.width.toFloat()
 //                        val newLeft = if (isFrontCamera) previewSize - (rect.right * scaleX) else rect.left * scaleX
@@ -347,24 +387,8 @@ class ImageAnalyzer(
 //
 //                        val rect = translateRect(bound)
 
-                        val bitmap = mediaImage.toBitmap()
-//                        var cropped = Bitmap.createBitmap(bitmap, bound.left, bound.top, bound.width(), bound.height())
 
-
-                        val matrix = Matrix()
-                        matrix.postRotate(-90f)
-                        val cropped = Bitmap.createBitmap(
-                            bitmap,
-                            bound.top,
-                            bound.left,
-                            bound.height(),
-                            bound.width(),
-                            matrix,
-                            true
-                        )
-
-
-                        recNew.crop = cropped
+//                        recNew.crop = cropped
 
 //
 ////                        Log.d("ASD", "LEFT: ${rect.left}")
@@ -379,96 +403,178 @@ class ImageAnalyzer(
 //                        Log.d("ASD", "====================")
 //
 
-                        var extra: Any? = null
+            //canvas.drawRect(faceBB, paint);
+            var label = ""
+            var confidence = -1f
+            var color = Color.BLUE
+            var extra: Any? = null
+            var crop: Bitmap? = null
 
-                        val resultsAux: List<SimilarityClassifier.Recognition> = detector.recognizeImage(faceBmp, false)
+            if (add) {
+                val bitmap = mediaImage.toBitmap()
+//                        var cropped = Bitmap.createBitmap(bitmap, bound.left, bound.top, bound.width(), bound.height())
+                val matrix = Matrix()
+                matrix.postRotate(-90f)
+                crop = Bitmap.createBitmap(
+                    bitmap,
+                    bound.top,
+                    bound.left,
+                    bound.height(),
+                    bound.width(),
+                    matrix,
+                    true
+                )
+            }
 
-                        if (resultsAux.isNotEmpty()) {
-                            for (result in resultsAux) {
 
-                                extra = result.extra
+            val resultsAux: List<SimilarityClassifier.Recognition> =
+                detector.recognizeImage(faceBmp, add)
 
-                                val element = Draw(
-                                    context = context,
-                                    rect = bound,
-                                    text = result.title
-                                )
-                                binding.mainlayout.addView(element, 1)
-                            }
+            if (resultsAux.isNotEmpty()) {
+                val result: SimilarityClassifier.Recognition = resultsAux[0]
 
-                            val handler = Handler()
-                            handler.postDelayed(Runnable { binding.mainlayout.removeViewAt(1) }, 100)
-                        }
+                extra = result.extra
 
+                val conf: Float = result.distance
+                if (conf < 1.0f) {
+                    confidence = conf
+                    label = result.title
+                    if (result.id.equals("0")) {
+                        color = Color.GREEN
+                    } else {
+                        color = Color.RED
                     }
+                }
+            }
 
-                }
-                .addOnFailureListener {
-                    Log.v("MainActivity", "Error - ${it.message}")
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
+            val result = SimilarityClassifier.Recognition(
+                "0", label, confidence, boundboxf
+            )
+
+            result.color = color
+            result.setLocation(boundboxf)
+            result.extra = extra as Object?
+            result.crop = crop
+            mappedRecognitions.add(result)
         }
+
+        updateResults(1, mappedRecognitions)
+
     }
 
-    private fun showDialog() {
+    private fun updateResults(
+        currTimestamp: Long,
+        mappedRecognitions: List<SimilarityClassifier.Recognition>
+    ) {
 
-        val builder = AlertDialog.Builder(context)
-        val inflater: LayoutInflater = activity.getLayoutInflater()
-        val dialogLayout: View = inflater.inflate(R.layout.image_edit_dialog, null)
-        val ivFace = dialogLayout.findViewById<ImageView>(R.id.dlg_image)
-        val tvTitle = dialogLayout.findViewById<TextView>(R.id.dlg_title)
-        val etName = dialogLayout.findViewById<EditText>(R.id.dlg_input)
+        tracker.trackResults(mappedRecognitions, currTimestamp)
+
+        if (mappedRecognitions.isNotEmpty()) {
+            mappedRecognitions.forEach {
+                showToastName(it.title)
+            }
+            val rec: SimilarityClassifier.Recognition = mappedRecognitions[0]
+            if (rec.extra != null) {
+                Log.d("RECOGNITION", "udpateResult if rec.extra notnull")
+                showDialog(rec)
+            }
+        }
+
+        mappedRecognitions.forEach {
+            val element = Draw(
+                context = context,
+                rect = it.getLocation().toRect(),
+                text = it.title
+            )
+            binding.mainlayout.addView(element, 1)
+
+            val handler = Handler()
+            handler.postDelayed(Runnable { binding.mainlayout.removeViewAt(1) }, 100)
+        }
+
+
+    }
+
+
+
+
+private fun onAddClick() {
+    addPending = true
+    //Toast.makeText(this, "click", Toast.LENGTH_LONG ).show();
+}
+
+private fun showDialog(rec: SimilarityClassifier.Recognition) {
+
+    val builder = AlertDialog.Builder(context)
+    val inflater: LayoutInflater = activity.getLayoutInflater()
+    val dialogLayout: View = inflater.inflate(R.layout.image_edit_dialog, null)
+    val ivFace = dialogLayout.findViewById<ImageView>(R.id.dlg_image)
+    val tvTitle = dialogLayout.findViewById<TextView>(R.id.dlg_title)
+    val etName = dialogLayout.findViewById<EditText>(R.id.dlg_input)
 
 //        if (recNew.bitmap != null) {
 //            ivFace.setImageBitmap(recNew.cropped)
 //        }
 
-        if (recNew.crop != null) {
-            ivFace.setImageBitmap(recNew.crop)
-        }
+//        if (rec.crop != null) {
+//            ivFace.setImageBitmap(rec.crop)
+//        }
 
-        tvTitle.text = "ivFace is not null"
-        etName.hint = "Input name"
+    tvTitle.text = "ivFace is not null"
+    ivFace.setImageBitmap(rec.crop)
+    etName.hint = "Input name"
+
+    builder.setPositiveButton("OK", DialogInterface.OnClickListener { dlg, i ->
         val name = etName.text.toString()
+        if (name.isNotEmpty()) {
+            detector.register(name, rec)
+        }
+        dlg.dismiss()
+    })
+    builder.setView(dialogLayout)
+    builder.show()
+}
 
-        builder.setPositiveButton("OK", DialogInterface.OnClickListener { dlg, i ->
-            detector.register(name, recNew)
-        })
-        builder.setView(dialogLayout)
-        builder.show()
-    }
+fun Image.toBitmap(): Bitmap {
+    val yBuffer = planes[0].buffer // Y
+    val vuBuffer = planes[2].buffer // VU
 
-    fun Image.toBitmap(): Bitmap {
-        val yBuffer = planes[0].buffer // Y
-        val vuBuffer = planes[2].buffer // VU
+    val ySize = yBuffer.remaining()
+    val vuSize = vuBuffer.remaining()
 
-        val ySize = yBuffer.remaining()
-        val vuSize = vuBuffer.remaining()
+    val nv21 = ByteArray(ySize + vuSize)
 
-        val nv21 = ByteArray(ySize + vuSize)
+    yBuffer.get(nv21, 0, ySize)
+    vuBuffer.get(nv21, ySize, vuSize)
 
-        yBuffer.get(nv21, 0, ySize)
-        vuBuffer.get(nv21, ySize, vuSize)
+    val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
+    val out = ByteArrayOutputStream()
+    yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 50, out)
+    val imageBytes = out.toByteArray()
+    return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+}
 
-        val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
-        val out = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 50, out)
-        val imageBytes = out.toByteArray()
-        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-    }
+private fun showToast(faceCount: Int, face: Face) {
+    val mToastToShow = Toast.makeText(
+        context,
+        "Face Count: $faceCount \n TrackingId: ${face.trackingId} \n Smiling: ${face.smilingProbability} ",
+        Toast.LENGTH_SHORT
+    )
+    mToastToShow.show()
+    val handler = Handler()
+    handler.postDelayed(Runnable { mToastToShow.cancel() }, 100)
+}
 
-    private fun showToast(faceCount: Int, face: Face) {
-        val mToastToShow = Toast.makeText(
-            context,
-            "Face Count: $faceCount \n TrackingId: ${face.trackingId} \n Smiling: ${face.smilingProbability} ",
-            Toast.LENGTH_SHORT
-        )
-        mToastToShow.show()
-        val handler = Handler()
-        handler.postDelayed(Runnable { mToastToShow.cancel() }, 100)
-    }
+private fun showToastName(str: String) {
+    val mToastToShow = Toast.makeText(
+        context,
+        str,
+        Toast.LENGTH_SHORT
+    )
+    mToastToShow.show()
+    val handler = Handler()
+    handler.postDelayed(Runnable { mToastToShow.cancel() }, 100)
+}
 }
 
 

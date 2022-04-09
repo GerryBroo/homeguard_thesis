@@ -40,12 +40,12 @@ interface SimilarityClassifier {
          */
         val id: String?,
         /** Display name for the recognition.  */
-        var title: String, distance: Float?, location: RectF?
+        var title: String, distance: Float, location: RectF?
     ) {
         /**
          * A sortable score for how good the recognition is relative to others. Lower should be better.
          */
-        val distance: Float?
+        val distance: Float
         var extra: Object?
 
         /** Optional location within the source image for the location of the recognized object.  */
