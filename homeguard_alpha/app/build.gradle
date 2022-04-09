@@ -35,6 +35,10 @@ android {
     }
 }
 
+// import DownloadModels task
+project.ext.ASSET_DIR = projectDir.toString() + '/src/main/assets'
+project.ext.TMP_DIR   = project.buildDir.toString() + '/downloads'
+
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.7.0'
@@ -62,4 +66,7 @@ dependencies {
 
     //Picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+    //Tensorflow
+    implementation('org.tensorflow:tensorflow-lite:0.0.0-nightly') { changing = true }
 }
