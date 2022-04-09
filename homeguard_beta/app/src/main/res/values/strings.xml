@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">HomeGuard Beta</string>
+    <string name="title_home">Home</string>
+    <string name="title_camera_preview">Camera Preview</string>
+    <string name="title_face_gallery">Face Gallery</string>
+</resources>
