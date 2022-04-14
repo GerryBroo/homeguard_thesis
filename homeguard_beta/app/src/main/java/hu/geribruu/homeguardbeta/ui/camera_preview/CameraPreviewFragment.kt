@@ -40,14 +40,14 @@ class CameraPreviewFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
-    private val viewModel : CameraPreviewViewModel by viewModels()
+    private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
+    private val viewModel: CameraPreviewViewModel by viewModels()
 
     @Inject
     lateinit var imageAnalyzer: ImageAnalyzer
+
     @Inject
     lateinit var cameraExecutor: ExecutorService
-
 
 
     companion object {
@@ -123,7 +123,8 @@ class CameraPreviewFragment : Fragment() {
     private fun startCamera() {
         Log.d("TAG", "START CAMERA")
 
-        cameraProviderFuture = context?.let { ProcessCameraProvider.getInstance(it) } as ListenableFuture<ProcessCameraProvider>
+        cameraProviderFuture =
+            context?.let { ProcessCameraProvider.getInstance(it) } as ListenableFuture<ProcessCameraProvider>
 
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
@@ -151,7 +152,12 @@ class CameraPreviewFragment : Fragment() {
 
         imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context!!), imageAnalyzer)
 
-        cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, preview, imageAnalysis)
+        cameraProvider.bindToLifecycle(
+            this as LifecycleOwner,
+            cameraSelector,
+            preview,
+            imageAnalysis
+        )
     }
 
     override fun onDestroy() {

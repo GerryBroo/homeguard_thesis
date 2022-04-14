@@ -9,22 +9,14 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import javax.inject.Inject
 
 class ImageAnalyzer @Inject constructor(
     private var context: Context,
+    private var faceDetector: FaceDetector
     ) : ImageAnalysis.Analyzer {
-
-    private val faceDetectorOption = FaceDetectorOptions.Builder()
-        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-        .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
-        .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
-        .enableTracking()
-        .build()
-
-    private val faceDetector = FaceDetection.getClient(faceDetectorOption)
-
 
     @SuppressLint("UnsafeExperimentalUsageError", "UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
