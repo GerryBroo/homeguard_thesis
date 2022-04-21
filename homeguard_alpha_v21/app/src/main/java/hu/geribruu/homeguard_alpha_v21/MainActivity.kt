@@ -4,19 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
-import android.content.DialogInterface.OnMultiChoiceClickListener
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.content.res.AssetFileDescriptor
 import android.graphics.*
 import android.media.Image
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.ParcelFileDescriptor
 import android.text.InputType
+import android.util.Log
 import android.util.Pair
 import android.util.Size
 import android.view.View
@@ -26,15 +22,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -51,8 +43,7 @@ import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.ReadOnlyBufferException
 import java.nio.channels.FileChannel
-import java.util.ArrayList
-import java.util.HashMap
+import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -590,7 +581,7 @@ class MainActivity : AppCompatActivity() {
         var ret: Pair<String, Float>? = null //to get closest match
         var prev_ret: Pair<String, Float>? = null //to get second closest match
         for ((name, value) in registered) {
-            val knownEmb : FloatArray = ((value.extra) as Array<*>)[0] as FloatArray
+            val knownEmb: FloatArray = ((value.extra) as Array<*>)[0] as FloatArray
             var distance = 0f
             for (i in emb.indices) {
                 val diff = emb[i] - knownEmb[i]
@@ -701,6 +692,9 @@ class MainActivity : AppCompatActivity() {
     //Similar Analyzing Procedure
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        Log.d("ASD", "Na most meg lett h`vva")
+
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
                 val selectedImageUri = data!!.data

@@ -1,5 +1,6 @@
 package hu.geribruu.homeguardbeta.ui
 
+import android.app.Activity
 import android.os.Bundle
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -10,11 +11,20 @@ import androidx.navigation.ui.setupWithNavController
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.databinding.ActivityMainBinding
+import org.tensorflow.lite.Interpreter
+import java.io.FileInputStream
+import java.io.IOException
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
+    companion object LoadTfLiteModel {
+        lateinit var tfLite: Interpreter
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,5 +44,22 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        //Load model
+        try {
+            tfLite = Interpreter(loadModelFile(this@MainActivity, "mobile_face_net.tflite"))
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun loadModelFile(activity: Activity, MODEL_FILE: String): MappedByteBuffer {
+        val fileDescriptor = activity.assets.openFd(MODEL_FILE)
+        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = fileDescriptor.startOffset
+        val declaredLength = fileDescriptor.declaredLength
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 }
