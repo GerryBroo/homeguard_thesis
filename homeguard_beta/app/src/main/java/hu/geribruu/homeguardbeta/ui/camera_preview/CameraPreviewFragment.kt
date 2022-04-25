@@ -3,12 +3,9 @@ package hu.geribruu.homeguardbeta.ui.camera_preview
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.RectF
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
-import android.util.Pair
 import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
@@ -26,19 +23,11 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetector
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
 import hu.geribruu.homeguardbeta.feature.face_recognition.ImageAnalyzer
 import hu.geribruu.homeguardbeta.feature.face_recognition.SimilarityClassifier
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.getCropBitmapByCPU
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.getResizedBitmap
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.rotateBitmap
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.toBitmap
-import hu.geribruu.homeguardbeta.ui.MainActivity
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executor
@@ -50,21 +39,9 @@ class CameraPreviewFragment : Fragment() {
 
     private var _binding: FragmentCameraPreviewBinding? = null
     private val binding get() = _binding!!
-//
-//    @Inject
-//    lateinit var imageAnalyzer: ImageAnalyzer
 
     @Inject
-    lateinit var detector: FaceDetector
-
-
-    var inputSize = 112 //Input size for model
-
-    var IMAGE_MEAN = 128.0f
-    var IMAGE_STD = 128.0f
-    var OUTPUT_SIZE = 192 //Output size of model
-    var isModelQuantized = false // todo constans
-    lateinit var intValues: IntArray  // todo nem v'gom miert lateniat
+    lateinit var imageAnalyzer: ImageAnalyzer
 
     private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
     var previewView: PreviewView? = null
@@ -148,85 +125,6 @@ class CameraPreviewFragment : Fragment() {
         return root
     }
 
-    fun recognizeImage(bitmap: Bitmap) {
-
-        // set Face to Preview
-        face_preview!!.setImageBitmap(bitmap)
-
-        //Create ByteBuffer to store normalized image
-        val imgData = ByteBuffer.allocateDirect(1 * inputSize * inputSize * 3 * 4)
-        imgData.order(ByteOrder.nativeOrder())
-        intValues = IntArray(inputSize * inputSize)
-
-        //get pixel values from Bitmap to normalize
-        bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-        imgData.rewind()
-        for (i in 0 until inputSize) {
-            for (j in 0 until inputSize) {
-                val pixelValue = intValues[i * inputSize + j]
-                if (isModelQuantized) {
-                    // Quantized model
-                    imgData.put((pixelValue shr 16 and 0xFF).toByte())
-                    imgData.put((pixelValue shr 8 and 0xFF).toByte())
-                    imgData.put((pixelValue and 0xFF).toByte())
-                } else { // Float model
-                    imgData.putFloat(((pixelValue shr 16 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
-                    imgData.putFloat(((pixelValue shr 8 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
-                    imgData.putFloat(((pixelValue and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
-                }
-            }
-        }
-        //imgData is input to our model
-        val inputArray = arrayOf<Any>(imgData)
-        val outputMap: MutableMap<Int, Any> = HashMap()
-        embeedings =
-            Array(1) { FloatArray(OUTPUT_SIZE) } //output of model will be stored in this variable
-        outputMap[0] = embeedings
-        MainActivity.tfLite.runForMultipleInputsOutputs(inputArray, outputMap) //Run model
-        var distance_local = Float.MAX_VALUE
-        val id = "0"
-        val label = "?"
-
-        //Compare new face with saved Faces.
-        if (registered.size > 0) {
-            val nearest = findNearest(embeedings[0]) //Find 2 closest matching face
-            if (nearest[0] != null) {
-                val name = nearest[0]!!.first //get name and distance of closest matching face
-                // label = name;
-                distance_local = nearest[0]!!.second
-
-                if (distance_local < distance) //If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
-                    reco_name!!.text = name else reco_name!!.text = "Unknown"
-                //                    System.out.println("nearest: " + name + " - distance: " + distance_local);
-
-            }
-        }
-    }
-
-    //Compare Faces by distance between face embeddings
-    private fun findNearest(emb: FloatArray): List<Pair<String, Float>?> {
-        val neighbour_list: MutableList<Pair<String, Float>?> = ArrayList()
-        var ret: Pair<String, Float>? = null //to get closest match
-        var prev_ret: Pair<String, Float>? = null //to get second closest match
-        for ((name, value) in registered) {
-            val knownEmb: FloatArray = ((value.extra) as Array<*>)[0] as FloatArray
-            var distance = 0f
-            for (i in emb.indices) {
-                val diff = emb[i] - knownEmb[i]
-                distance += diff * diff
-            }
-            distance = Math.sqrt(distance.toDouble()).toFloat()
-            if (ret == null || distance < ret.second) {
-                prev_ret = ret
-                ret = Pair(name, distance)
-            }
-        }
-        if (prev_ret == null) prev_ret = ret
-        neighbour_list.add(ret)
-        neighbour_list.add(prev_ret)
-        return neighbour_list
-    }
-
     private fun addFace() {
         run {
             start = false
@@ -306,70 +204,13 @@ class CameraPreviewFragment : Fragment() {
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST) //Latest frame is shown
             .build()
         val executor: Executor = Executors.newSingleThreadExecutor()
-        imageAnalysis.setAnalyzer(executor, { imageProxy ->
-            try {
-                Thread.sleep(0) //Camera preview refreshed every 10 millisec(adjust as required)
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
-            var image: InputImage? = null
-            @SuppressLint("UnsafeExperimentalUsageError") val mediaImage// Camera Feed-->Analyzer-->ImageProxy-->mediaImage-->InputImage(needed for ML kit face detection)
-                    = imageProxy.image
-            if (mediaImage != null) {
-                image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-                //                    System.out.println("Rotation "+imageProxy.getImageInfo().getRotationDegrees());
-            }
+        imageAnalysis.setAnalyzer(executor, imageAnalyzer)
 
-            //                System.out.println("ANALYSIS");
-
-            //Process acquired image to detect faces
-            val result = detector!!.process(image)
-                .addOnSuccessListener { faces ->
-                    if (faces.size != 0) {
-                        val face = faces[0] //Get first face from detected faces
-                        //                                                    System.out.println(face);
-
-                        //mediaImage to Bitmap
-                        val frame_bmp = toBitmap(mediaImage)
-                        val rot = imageProxy.imageInfo.rotationDegrees
-
-                        //Adjust orientation of Face
-                        val frame_bmp1 =
-                            rotateBitmap(frame_bmp, rot, false, false)
-
-
-                        //Get bounding box of face
-                        val boundingBox = RectF(face.boundingBox)
-
-                        //Crop out bounding box from whole Bitmap(image)
-                        var cropped_face =
-                            getCropBitmapByCPU(frame_bmp1, boundingBox)
-                        if (flipX) cropped_face =
-                            rotateBitmap(cropped_face, 0, flipX, false)
-                        //Scale the acquired Face to 112*112 which is required input for model
-                        val scaled = getResizedBitmap(cropped_face, 112, 112)
-                        if (start) recognizeImage(scaled) //Send scaled bitmap to create face embeddings.
-                        //                                                    System.out.println(boundingBox);
-                    } else {
-                        if (registered.isEmpty()) reco_name!!.text =
-                            "Add Face" else reco_name!!.text =
-                            "No Face Detected!"
-                    }
-                }
-                .addOnFailureListener {
-                    // Task failed with an exception
-                    // ...
-                }
-                .addOnCompleteListener {
-                    imageProxy.close() //v.important to acquire next frame for analysis
-                }
-        })
         cameraProvider.bindToLifecycle(
             (this as LifecycleOwner),
             cameraSelector!!, imageAnalysis, preview
         )
     }
-
 
     companion object {
         private const val MY_CAMERA_REQUEST_CODE = 100
