@@ -8,11 +8,11 @@ class CaptureManager @Inject constructor() {
 
     var previewBitmap: Bitmap? = null
 
-    fun manageNewFace(bitmap : Bitmap) {
+    fun manageNewFace(bitmap: Bitmap) {
 
         previewBitmap = bitmap
 
-        if(previewBitmap == null) {
+        if (previewBitmap == null) {
             Log.d("ASD", "Null m;g mindig capturemaganerfeb")
         }
     }

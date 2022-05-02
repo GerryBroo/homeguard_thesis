@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -27,6 +26,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
+import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.ImageAnalyzer
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.SimilarityClassifier
@@ -49,20 +49,20 @@ class CameraPreviewFragment : Fragment() {
     private val viewModel: CameraPreviewViewModel by viewModels()
 
     private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
-    var previewView: PreviewView? = null
-    lateinit var face_preview: ImageView
-    lateinit var reco_name: TextView
-    lateinit var textAbove_preview: TextView
-    lateinit var recognize: Button
-    lateinit var camera_switch: Button
-    lateinit var add_face: ImageButton
-    var cameraSelector: CameraSelector? = null
-    var distance = 1.0f
-    var start = true
-    var flipX = false
-    var cam_face = CameraSelector.LENS_FACING_BACK //Default Back Camera
-    lateinit var embeedings: Array<FloatArray>
-    lateinit var cameraProvider: ProcessCameraProvider
+    private var previewView: PreviewView? = null
+    private lateinit var facePreview: ImageView
+    private lateinit var recoName: TextView
+    private lateinit var textAbovePreview: TextView
+    private lateinit var recognize: Button
+    private lateinit var cameraSwitch: Button
+    private lateinit var addFaceBtn: ImageButton
+
+    private var start = true
+    private var flipX = false
+    private var cameraSelector = CameraSelector.LENS_FACING_FRONT //Default FRONT Camera
+
+    private lateinit var embeedings: Array<FloatArray>
+    private lateinit var cameraProvider: ProcessCameraProvider
     private var registered: HashMap<String?, SimilarityClassifier.Recognition> =
         HashMap<String?, SimilarityClassifier.Recognition>() //saved Faces
 
@@ -75,52 +75,52 @@ class CameraPreviewFragment : Fragment() {
         _binding = FragmentCameraPreviewBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        face_preview = binding.imageView
-        reco_name = binding.textView
-        textAbove_preview = binding.textAbovePreview
-        add_face = binding.imageButton
-        add_face.setVisibility(View.INVISIBLE)
-        val sharedPref = activity!!.getSharedPreferences("Distance", AppCompatActivity.MODE_PRIVATE)
-        distance = sharedPref.getFloat("distance", 1.00f)
-        face_preview.setVisibility(View.INVISIBLE)
+        facePreview = binding.imageView
+        recoName = binding.textView
+        textAbovePreview = binding.textAbovePreview
+        addFaceBtn = binding.imageButton
+        addFaceBtn.visibility = View.INVISIBLE
+
+        facePreview.visibility = View.INVISIBLE
         recognize = binding.button3
-        camera_switch = binding.btnFlipCamera
-        textAbove_preview.setText("Recognized Face:")
+        cameraSwitch = binding.btnFlipCamera
+        textAbovePreview.text = getString(R.string.camera_recognized_faces)
+
         //Camera Permission
         if (activity!!.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.CAMERA), MY_CAMERA_REQUEST_CODE)
         }
 
         //On-screen switch to toggle between Cameras.
-        camera_switch.setOnClickListener(View.OnClickListener {
-            if (cam_face == CameraSelector.LENS_FACING_BACK) {
-                cam_face = CameraSelector.LENS_FACING_FRONT
+        cameraSwitch.setOnClickListener {
+            if (cameraSelector == CameraSelector.LENS_FACING_BACK) {
+                cameraSelector = CameraSelector.LENS_FACING_FRONT
                 flipX = true
             } else {
-                cam_face = CameraSelector.LENS_FACING_BACK
+                cameraSelector = CameraSelector.LENS_FACING_BACK
                 flipX = false
             }
-            cameraProvider!!.unbindAll()
+            cameraProvider.unbindAll()
             cameraBind()
-        })
-        add_face.setOnClickListener(View.OnClickListener { addFace() })
-        recognize.setOnClickListener(View.OnClickListener {
-            if (recognize.getText().toString() == "Recognize") {
+        }
+        addFaceBtn.setOnClickListener { addFace() }
+        recognize.setOnClickListener {
+            if (recognize.text.toString() == "Recognize") {
                 start = true
-                textAbove_preview.setText("Recognized Face:")
-                recognize.setText("Add Face")
-                add_face.setVisibility(View.INVISIBLE)
-                reco_name.setVisibility(View.VISIBLE)
-                face_preview.setVisibility(View.INVISIBLE)
+                textAbovePreview.text = getString(R.string.camera_recognized_faces)
+                recognize.text = getString(R.string.camera_add_faces)
+                addFaceBtn.visibility = View.INVISIBLE
+                recoName.visibility = View.VISIBLE
+                facePreview.visibility = View.INVISIBLE
                 //preview_info.setVisibility(View.INVISIBLE);
             } else {
-                textAbove_preview.setText("Face Preview: ")
-                recognize.setText("Recognize")
-                add_face.setVisibility(View.VISIBLE)
-                reco_name.setVisibility(View.INVISIBLE)
-                face_preview.setVisibility(View.VISIBLE)
+                textAbovePreview.text = getString(R.string.camera_recognized_faces)
+                recognize.text = getString(R.string.camera_recognize)
+                addFaceBtn.visibility = View.VISIBLE
+                recoName.visibility = View.INVISIBLE
+                facePreview.visibility = View.VISIBLE
             }
-        })
+        }
 
 //        lifecycleScope.launch {
 //            viewModel.uiState.collect { uiState ->
@@ -135,7 +135,7 @@ class CameraPreviewFragment : Fragment() {
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collectLatest { uiState ->
                 if (uiState.previewBitmap != null) {
-                    face_preview.setImageBitmap(uiState.previewBitmap)
+                    facePreview.setImageBitmap(uiState.previewBitmap)
                 } else {
                     Log.d("ASD", "Null a fragmentben")
                 }
@@ -163,7 +163,7 @@ class CameraPreviewFragment : Fragment() {
             // Set up the buttons
             builder.setPositiveButton(
                 "ADD"
-            ) { dialog, which -> //Toast.makeText(context, input.getText().toString(), Toast.LENGTH_SHORT).show();
+            ) { _, _ -> //Toast.makeText(context, input.getText().toString(), Toast.LENGTH_SHORT).show();
 
                 //Create and Initialize new object with Face embeddings and Name.
                 val result = SimilarityClassifier.Recognition(
@@ -175,7 +175,7 @@ class CameraPreviewFragment : Fragment() {
             }
             builder.setNegativeButton(
                 "Cancel"
-            ) { dialog, which ->
+            ) { dialog, _ ->
                 start = true
                 dialog.cancel()
             }
@@ -218,8 +218,9 @@ class CameraPreviewFragment : Fragment() {
     fun bindPreview(cameraProvider: ProcessCameraProvider) {
         val preview = Preview.Builder()
             .build()
-        cameraSelector = CameraSelector.Builder()
-            .requireLensFacing(cam_face)
+
+        val cameraSelector: CameraSelector = CameraSelector.Builder()
+            .requireLensFacing(cameraSelector)
             .build()
         preview.setSurfaceProvider(previewView!!.surfaceProvider)
         val imageAnalysis = ImageAnalysis.Builder()
@@ -231,143 +232,11 @@ class CameraPreviewFragment : Fragment() {
 
         cameraProvider.bindToLifecycle(
             (this as LifecycleOwner),
-            cameraSelector!!, imageAnalysis, preview
+            cameraSelector, imageAnalysis, preview
         )
     }
 
     companion object {
         private const val MY_CAMERA_REQUEST_CODE = 100
     }
-
-
-//    private var _binding: FragmentCameraPreviewBinding? = null
-//
-//    // This property is only valid between onCreateView and
-//    // onDestroyView.
-//    private val binding get() = _binding!!
-//
-//    private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
-//    private val viewModel: CameraPreviewViewModel by viewModels()
-//
-//    @Inject
-//    lateinit var imageAnalyzer: ImageAnalyzer
-//
-//    @Inject
-//    lateinit var cameraExecutor: ExecutorService
-//
-//
-//    companion object {
-//        private const val TAG = "HomeGuardApp"
-//        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-//        private const val REQUEST_CODE_PERMISSIONS = 10
-//        private val REQUIRED_PERMISSIONS =
-//            mutableListOf(
-//                Manifest.permission.CAMERA,
-//                Manifest.permission.RECORD_AUDIO
-//            ).apply {
-//                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-//                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                }
-//            }.toTypedArray()
-//    }
-//
-//    override fun onCreateView(
-//        inflater: LayoutInflater,
-//        container: ViewGroup?,
-//        savedInstanceState: Bundle?
-//    ): View {
-//        _binding = FragmentCameraPreviewBinding.inflate(inflater, container, false)
-//        val root: View = binding.root
-//
-//        // Request camera permissions
-//        if (allPermissionsGranted()) {
-//            startCamera()
-//        } else {
-//            activity?.let {
-//                ActivityCompat.requestPermissions(
-//                    it, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-//                )
-//            }
-//        }
-//
-//        return root
-//    }
-//
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        _binding = null
-//    }
-//
-//    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-//        context?.let { context ->
-//            ContextCompat.checkSelfPermission(
-//                context, it
-//            )
-//        } == PackageManager.PERMISSION_GRANTED
-//    }
-//
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int, permissions: Array<String>, grantResults:
-//        IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-//            if (allPermissionsGranted()) {
-//                startCamera()
-//            } else {
-//                Toast.makeText(
-//                    context,
-//                    "Permissions not granted by the user.",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//                activity?.finish()
-//            }
-//        }
-//    }
-//
-//    /** cameraX **/
-//    private fun startCamera() {
-//        Log.d("TAG", "START CAMERA")
-//
-//        cameraProviderFuture =
-//            context?.let { ProcessCameraProvider.getInstance(it) } as ListenableFuture<ProcessCameraProvider>
-//
-//        cameraProviderFuture.addListener({
-//            val cameraProvider = cameraProviderFuture.get()
-//
-//            bindPreview(cameraProvider = cameraProvider)
-//
-//        }, ContextCompat.getMainExecutor(context!!))
-//    }
-//
-//    @SuppressLint("UnsafeExperimentalUsageError")
-//    private fun bindPreview(cameraProvider: ProcessCameraProvider) {
-//
-//        val preview = Preview.Builder().build()
-//
-//        val cameraSelector = CameraSelector.Builder()
-//            .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
-//            .build()
-//
-//        preview.setSurfaceProvider(binding.previewView.surfaceProvider)
-//
-//        val imageAnalysis = ImageAnalysis.Builder()
-//            .setTargetResolution(Size(1280, 720))
-//            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-//            .build()
-//
-//        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context!!), imageAnalyzer)
-//
-//        cameraProvider.bindToLifecycle(
-//            this as LifecycleOwner,
-//            cameraSelector,
-//            preview,
-//            imageAnalysis
-//        )
-//    }
-//
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        cameraExecutor.shutdown()
-//    }
 }
