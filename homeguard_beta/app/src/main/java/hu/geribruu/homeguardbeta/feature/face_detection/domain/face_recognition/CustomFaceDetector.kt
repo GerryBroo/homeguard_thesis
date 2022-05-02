@@ -1,4 +1,4 @@
-package hu.geribruu.homeguardbeta.feature.face_recognition
+package hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition
 
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.camera_preview.CameraPreviewFragment">
+    tools:context=".feature.face_detection.presentation.camera_preview_screen.CameraPreviewFragment">
 
     <FrameLayout
         android:id="@+id/container"

@@ -1,4 +1,4 @@
-package hu.geribruu.homeguardbeta.ui.camera_preview
+package hu.geribruu.homeguardbeta.feature.face_detection.presentation.camera_preview_screen
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
@@ -21,13 +22,15 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.mlkit.vision.face.FaceDetector
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
-import hu.geribruu.homeguardbeta.feature.face_recognition.ImageAnalyzer
-import hu.geribruu.homeguardbeta.feature.face_recognition.SimilarityClassifier
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.ImageAnalyzer
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.SimilarityClassifier
+import kotlinx.coroutines.flow.collectLatest
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executor
@@ -42,6 +45,8 @@ class CameraPreviewFragment : Fragment() {
 
     @Inject
     lateinit var imageAnalyzer: ImageAnalyzer
+
+    private val viewModel: CameraPreviewViewModel by viewModels()
 
     private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
     var previewView: PreviewView? = null
@@ -86,7 +91,6 @@ class CameraPreviewFragment : Fragment() {
             requestPermissions(arrayOf(Manifest.permission.CAMERA), MY_CAMERA_REQUEST_CODE)
         }
 
-
         //On-screen switch to toggle between Cameras.
         camera_switch.setOnClickListener(View.OnClickListener {
             if (cam_face == CameraSelector.LENS_FACING_BACK) {
@@ -118,7 +122,25 @@ class CameraPreviewFragment : Fragment() {
             }
         })
 
+//        lifecycleScope.launch {
+//            viewModel.uiState.collect { uiState ->
+//                if (uiState.previewBitmap != null) {
+//                    face_preview.setImageBitmap(uiState.previewBitmap)
+//                } else {
+//                    Log.d("ASD", "Null a fragmentben")
+//                }
+//            }
+//        }
 
+        lifecycleScope.launchWhenStarted {
+            viewModel.uiState.collectLatest { uiState ->
+                if (uiState.previewBitmap != null) {
+                    face_preview.setImageBitmap(uiState.previewBitmap)
+                } else {
+                    Log.d("ASD", "Null a fragmentben")
+                }
+            }
+        }
 
         cameraBind()
 
@@ -126,6 +148,7 @@ class CameraPreviewFragment : Fragment() {
     }
 
     private fun addFace() {
+
         run {
             start = false
             val builder =

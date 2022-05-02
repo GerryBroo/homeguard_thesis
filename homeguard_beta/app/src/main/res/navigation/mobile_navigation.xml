@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/navigation_camera_preview"
-        android:name="hu.geribruu.homeguardbeta.ui.camera_preview.CameraPreviewFragment"
+        android:name="hu.geribruu.homeguardbeta.feature.face_detection.presentation.camera_preview_screen.CameraPreviewFragment"
         android:label="@string/title_camera_preview"
         tools:layout="@layout/fragment_camera_preview" />
 
@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/navigation_face_gallery"
-        android:name="hu.geribruu.homeguardbeta.ui.face_gallery.FaceGalleryFragment"
+        android:name="hu.geribruu.homeguardbeta.feature.face_detection.presentation.face_gallery_screen.FaceGalleryFragment"
         android:label="@string/title_face_gallery"
         tools:layout="@layout/fragment_face_gallery" />
 </navigation>

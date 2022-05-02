@@ -1,4 +1,4 @@
-package hu.geribruu.homeguardbeta.feature.face_recognition
+package hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -12,10 +12,10 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetector
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.getCropBitmapByCPU
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.getResizedBitmap
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.rotateBitmap
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.toBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getCropBitmapByCPU
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getResizedBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.rotateBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.toBitmap
 import hu.geribruu.homeguardbeta.ui.MainActivity
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -24,11 +24,9 @@ import javax.inject.Inject
 
 class ImageAnalyzer @Inject constructor(
     private var context: Context,
-    private var faceDetector: FaceDetector
-) : ImageAnalysis.Analyzer {
-
-    @Inject
-    lateinit var detector: FaceDetector
+    private var faceDetector: FaceDetector,
+    private val captureManager : CaptureManager
+    ) : ImageAnalysis.Analyzer {
 
     var flipX = false // todo ey is fontos
     var start = true  // todo kell
@@ -48,6 +46,7 @@ class ImageAnalyzer @Inject constructor(
     private var registered: HashMap<String?, SimilarityClassifier.Recognition> =
         HashMap<String?, SimilarityClassifier.Recognition>() //saved Faces
 
+    var previewBitmap: Bitmap? = null
 
     @SuppressLint("UnsafeExperimentalUsageError", "UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -68,8 +67,9 @@ class ImageAnalyzer @Inject constructor(
         //                System.out.println("ANALYSIS");
 
         //Process acquired image to detect faces
-        val result = detector!!.process(image)
+        val result = faceDetector!!.process(image)
             .addOnSuccessListener { faces ->
+
                 if (faces.size != 0) {
                     val face = faces[0] //Get first face from detected faces
                     //                                                    System.out.println(face);
@@ -93,11 +93,13 @@ class ImageAnalyzer @Inject constructor(
                         rotateBitmap(cropped_face, 0, flipX, false)
                     //Scale the acquired Face to 112*112 which is required input for model
                     val scaled = getResizedBitmap(cropped_face, 112, 112)
-                    if (start) recognizeImage(scaled) //Send scaled bitmap to create face embeddings.
+                    if (start) {
+                        recognizeImage(scaled)
+                    } //Send scaled bitmap to create face embeddings.
                     //                                                    System.out.println(boundingBox);
                 } else {
-                    if (registered.isEmpty()) reco_name!!.text =
-                        "Add Face" else reco_name!!.text =
+                    if (registered.isEmpty()) reco_name =
+                        "Add Face" else reco_name =
                         "No Face Detected!"
                 }
             }
@@ -113,7 +115,14 @@ class ImageAnalyzer @Inject constructor(
     fun recognizeImage(bitmap: Bitmap) {
 
         // set Face to Preview
-        face_preview!!.setImageBitmap(bitmap)
+//        face_preview!!.setImageBitmap(bitmap)
+
+        previewBitmap = bitmap
+        captureManager.manageNewFace(bitmap)
+
+        if(previewBitmap == null) {
+            Log.d("ASD", "Ay image analzyerben is Null")
+        }
 
         //Create ByteBuffer to store normalized image
         val imgData = ByteBuffer.allocateDirect(1 * inputSize * inputSize * 3 * 4)
@@ -157,8 +166,8 @@ class ImageAnalyzer @Inject constructor(
                 // label = name;
                 distance_local = nearest[0]!!.second
 
-                if (distance_local < distance) //If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
-                    reco_name!!.text = name else reco_name!!.text = "Unknown"
+                if (distance_local < 1.0f) //If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
+                    reco_name = name else reco_name = "Unknown"
                 //                    System.out.println("nearest: " + name + " - distance: " + distance_local);
 
             }
