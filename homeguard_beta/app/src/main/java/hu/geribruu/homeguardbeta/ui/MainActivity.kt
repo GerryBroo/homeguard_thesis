@@ -12,6 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.databinding.ActivityMainBinding
 import org.tensorflow.lite.Interpreter
+import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.nio.MappedByteBuffer
@@ -22,8 +23,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    companion object LoadTfLiteModel {
+    companion object LoadFile {
         lateinit var tfLite: Interpreter
+        lateinit var outputFileUri : String
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +53,8 @@ class MainActivity : AppCompatActivity() {
         } catch (e: IOException) {
             e.printStackTrace()
         }
+
+        outputFileUri = getOutputDirectory()
     }
 
     @Throws(IOException::class)
@@ -61,5 +65,13 @@ class MainActivity : AppCompatActivity() {
         val startOffset = fileDescriptor.startOffset
         val declaredLength = fileDescriptor.declaredLength
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+    }
+
+    fun getOutputDirectory(): String {
+
+        val mediaDir = externalMediaDirs?.firstOrNull().let {
+            File(it, resources.getString(R.string.app_name)).apply { mkdirs() } }
+        return if (mediaDir.exists())
+            mediaDir.toString() else filesDir.toString()
     }
 }

@@ -10,19 +10,19 @@ class FaceRepositoryImpl(
 ): FaceRepository {
 
     override fun getFaces(): Flow<List<RecognizedFace>> {
-        TODO("Not yet implemented")
+        dao.getFace()
     }
 
     override suspend fun getFaceById(id: Int): RecognizedFace? {
-        TODO("Not yet implemented")
+        dao.getFaceById(id)
     }
 
     override suspend fun insertFace(face: RecognizedFace) {
-        TODO("Not yet implemented")
+        dao.insertFace(face)
     }
 
     override suspend fun deleteFace(face: RecognizedFace) {
-        TODO("Not yet implemented")
+        dao.deleteFace()
     }
 
 

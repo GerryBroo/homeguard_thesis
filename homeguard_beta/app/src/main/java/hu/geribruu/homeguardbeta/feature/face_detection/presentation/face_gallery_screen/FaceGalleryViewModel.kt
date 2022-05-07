@@ -1,13 +1,17 @@
 package hu.geribruu.homeguardbeta.feature.face_detection.presentation.face_gallery_screen
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import dagger.hilt.android.lifecycle.HiltViewModel
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.model.RecognizedFace
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.repository.FaceRepository
+import javax.inject.Inject
 
-class FaceGalleryViewModel : ViewModel() {
+@HiltViewModel
+class FaceGalleryViewModel @Inject constructor(
+    repository: FaceRepository
+) : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is Face Gallery Fragment"
-    }
-    val text: LiveData<String> = _text
+    val faces: LiveData<List<RecognizedFace>> = repository.getFaces().asLiveData()
 }

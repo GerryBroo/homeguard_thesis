@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.Log
 import android.util.Pair
-import com.google.mlkit.vision.face.FaceDetector
 import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +29,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.FaceDetector
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
