@@ -1,4 +1,4 @@
-package hu.geribruu.homeguardbeta.feature.face_recognition
+package hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -12,10 +12,10 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetector
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.getCropBitmapByCPU
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.getResizedBitmap
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.rotateBitmap
-import hu.geribruu.homeguardbeta.feature.face_recognition.util.toBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getCropBitmapByCPU
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getResizedBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.rotateBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.toBitmap
 import hu.geribruu.homeguardbeta.ui.MainActivity
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -24,9 +24,9 @@ import javax.inject.Inject
 
 class ImageAnalyzer @Inject constructor(
     private var context: Context,
-    private var faceDetector: FaceDetector
-) : ImageAnalysis.Analyzer {
-
+    private var faceDetector: FaceDetector,
+    private val captureManager : CaptureManager
+    ) : ImageAnalysis.Analyzer {
 
     var flipX = false // todo ey is fontos
     var start = true  // todo kell
@@ -46,68 +46,83 @@ class ImageAnalyzer @Inject constructor(
     private var registered: HashMap<String?, SimilarityClassifier.Recognition> =
         HashMap<String?, SimilarityClassifier.Recognition>() //saved Faces
 
+    var previewBitmap: Bitmap? = null
 
     @SuppressLint("UnsafeExperimentalUsageError", "UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
 
-        val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-        val mediaImage = imageProxy.image
-
-        if (mediaImage != null) {
-            val processImage = InputImage.fromMediaImage(mediaImage, rotationDegrees)
-
-            faceDetector.process(processImage)
-                .addOnSuccessListener { faces ->
-                    if (faces.size != 0) {
-                        val face = faces[0] //Get first face from detected faces
-                        //                                                    System.out.println(face);
-
-                        //mediaImage to Bitmap
-                        val frame_bmp = toBitmap(mediaImage)
-                        val rot = imageProxy.imageInfo.rotationDegrees
-
-                        //Adjust orientation of Face
-                        val frame_bmp1 =
-                            rotateBitmap(frame_bmp, rot, false, false)
-
-
-                        //Get bounding box of face
-                        val boundingBox = RectF(face.boundingBox)
-
-                        //Crop out bounding box from whole Bitmap(image)
-                        var cropped_face =
-                            getCropBitmapByCPU(frame_bmp1, boundingBox)
-                        if (flipX) cropped_face =
-                            rotateBitmap(cropped_face, 0, flipX, false)
-                        //Scale the acquired Face to 112*112 which is required input for model
-                        val scaled = getResizedBitmap(cropped_face, 112, 112)
-                        if (start) recognizeImage(scaled) //Send scaled bitmap to create face embeddings.
-                        //                                                    System.out.println(boundingBox);
-                    } else {
-//                        if (registered.isEmpty()) reco_name!!.text =
-//                            "Add Face" else reco_name!!.text =
-//                            "No Face Detected!"
-                        if (registered.isEmpty()) {
-                            reco_name = "Add Face"
-                        } else {
-                            reco_name = "No Face Detected!"
-                        }
-                    }
-
-                }
-                .addOnFailureListener {
-                    Log.v("MainActivity", "Error - ${it.message}")
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
+        try {
+            Thread.sleep(0) //Camera preview refreshed every 10 millisec(adjust as required)
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
         }
+        var image: InputImage? = null
+        @SuppressLint("UnsafeExperimentalUsageError") val mediaImage// Camera Feed-->Analyzer-->ImageProxy-->mediaImage-->InputImage(needed for ML kit face detection)
+                = imageProxy.image
+        if (mediaImage != null) {
+            image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+            //                    System.out.println("Rotation "+imageProxy.getImageInfo().getRotationDegrees());
+        }
+
+        //                System.out.println("ANALYSIS");
+
+        //Process acquired image to detect faces
+        val result = faceDetector!!.process(image)
+            .addOnSuccessListener { faces ->
+
+                if (faces.size != 0) {
+                    val face = faces[0] //Get first face from detected faces
+                    //                                                    System.out.println(face);
+
+                    //mediaImage to Bitmap
+                    val frame_bmp = toBitmap(mediaImage)
+                    val rot = imageProxy.imageInfo.rotationDegrees
+
+                    //Adjust orientation of Face
+                    val frame_bmp1 =
+                        rotateBitmap(frame_bmp, rot, false, false)
+
+
+                    //Get bounding box of face
+                    val boundingBox = RectF(face.boundingBox)
+
+                    //Crop out bounding box from whole Bitmap(image)
+                    var cropped_face =
+                        getCropBitmapByCPU(frame_bmp1, boundingBox)
+                    if (flipX) cropped_face =
+                        rotateBitmap(cropped_face, 0, flipX, false)
+                    //Scale the acquired Face to 112*112 which is required input for model
+                    val scaled = getResizedBitmap(cropped_face, 112, 112)
+                    if (start) {
+                        recognizeImage(scaled)
+                    } //Send scaled bitmap to create face embeddings.
+                    //                                                    System.out.println(boundingBox);
+                } else {
+                    if (registered.isEmpty()) reco_name =
+                        "Add Face" else reco_name =
+                        "No Face Detected!"
+                }
+            }
+            .addOnFailureListener {
+                // Task failed with an exception
+                // ...
+            }
+            .addOnCompleteListener {
+                imageProxy.close() //v.important to acquire next frame for analysis
+            }
     }
 
     fun recognizeImage(bitmap: Bitmap) {
 
         // set Face to Preview
-//        face_preview.setImageBitmap(bitmap)
+//        face_preview!!.setImageBitmap(bitmap)
+
+        previewBitmap = bitmap
+        captureManager.manageNewFace(bitmap)
+
+        if(previewBitmap == null) {
+            Log.d("ASD", "Ay image analzyerben is Null")
+        }
 
         //Create ByteBuffer to store normalized image
         val imgData = ByteBuffer.allocateDirect(1 * inputSize * inputSize * 3 * 4)
@@ -151,10 +166,10 @@ class ImageAnalyzer @Inject constructor(
                 // label = name;
                 distance_local = nearest[0]!!.second
 
-
                 if (distance_local < 1.0f) //If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
                     reco_name = name else reco_name = "Unknown"
                 //                    System.out.println("nearest: " + name + " - distance: " + distance_local);
+
             }
         }
     }

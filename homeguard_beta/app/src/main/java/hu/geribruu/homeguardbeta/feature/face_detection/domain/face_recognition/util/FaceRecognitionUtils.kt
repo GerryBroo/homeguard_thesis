@@ -1,4 +1,4 @@
-package hu.geribruu.homeguardbeta.feature.face_recognition.util
+package hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util
 
 import android.graphics.*
 import android.media.Image

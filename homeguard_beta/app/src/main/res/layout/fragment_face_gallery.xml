@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.face_gallery.FaceGalleryFragment">
+    tools:context=".feature.face_detection.presentation.face_gallery_screen.FaceGalleryFragment">
 
     <TextView
         android:id="@+id/text_notifications"

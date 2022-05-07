@@ -1,4 +1,4 @@
-package hu.geribruu.homeguardbeta.ui.face_gallery
+package hu.geribruu.homeguardbeta.feature.face_detection.presentation.face_gallery_screen
 
 import android.os.Bundle
 import android.view.LayoutInflater

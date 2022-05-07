@@ -1,4 +1,4 @@
-package hu.geribruu.homeguardbeta.feature.face_recognition
+package hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition
 
 interface SimilarityClassifier {
     /** An immutable result returned by a Classifier describing what was recognized.  */
