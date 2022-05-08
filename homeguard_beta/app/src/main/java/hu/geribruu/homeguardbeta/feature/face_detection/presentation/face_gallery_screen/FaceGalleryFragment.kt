@@ -8,10 +8,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentFaceGalleryBinding
 import hu.geribruu.homeguardbeta.feature.face_detection.presentation.face_gallery_screen.adapter.FaceGalleryAdapter
 import kotlinx.android.synthetic.main.fragment_face_gallery.*
 
+@AndroidEntryPoint
 class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
 
     private var _binding: FragmentFaceGalleryBinding? = null

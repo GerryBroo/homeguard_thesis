@@ -25,7 +25,7 @@ import javax.inject.Inject
 class ImageAnalyzer @Inject constructor(
     private var context: Context,
     private var faceDetector: FaceDetector,
-    private val captureManager : CaptureManager
+    private val faceCaptureManager : FaceCaptureManager
     ) : ImageAnalysis.Analyzer {
 
     var flipX = false // todo ey is fontos
@@ -116,9 +116,6 @@ class ImageAnalyzer @Inject constructor(
 
         // set Face to Preview
 //        face_preview!!.setImageBitmap(bitmap)
-
-        previewBitmap = bitmap
-        captureManager.manageNewFace(bitmap)
 
         if(previewBitmap == null) {
             Log.d("ASD", "Ay image analzyerben is Null")

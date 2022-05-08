@@ -33,6 +33,7 @@ import com.google.mlkit.vision.face.FaceDetector
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.FaceCaptureManager
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.ImageAnalyzer
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.SimilarityClassifier
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getCropBitmapByCPU
@@ -60,6 +61,9 @@ class CameraPreviewFragment : Fragment() {
 
     @Inject
     lateinit var faceDetector: FaceDetector
+
+    @Inject
+    lateinit var faceCaptureManager: FaceCaptureManager
 
     private val viewModel: CameraPreviewViewModel by viewModels()
 
@@ -193,9 +197,13 @@ class CameraPreviewFragment : Fragment() {
                 val result = SimilarityClassifier.Recognition(
                     "0", "", -1f
                 )
+                val name = input.text.toString()
+
                 result.extra = embeedings
-                registered[input.text.toString()] = result
+                registered[name] = result
                 start = true
+
+                faceCaptureManager.manageNewFace(name)
             }
             builder.setNegativeButton(
                 "Cancel"
