@@ -11,14 +11,15 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [RecognizedFace::class],
-    version = 1
+    version = 1,
+    exportSchema = false
 )
 abstract class FaceDatabase : RoomDatabase() {
 
     abstract fun faceDao(): FaceDao
 
-    private class FaceDatabaseCallback (
-        private val scope : CoroutineScope
+    private class FaceDatabaseCallback(
+        private val scope: CoroutineScope
     ) : RoomDatabase.Callback() {
 
         override fun onCreate(db: SupportSQLiteDatabase) {
@@ -34,14 +35,14 @@ abstract class FaceDatabase : RoomDatabase() {
         }
     }
 
-    companion object{
+    companion object {
         @Volatile
-        private var INSTANCE : FaceDatabase? = null
+        private var INSTANCE: FaceDatabase? = null
 
         fun getDatabase(
-            context : Context,
-            scope : CoroutineScope
-        ) : FaceDatabase {
+            context: Context,
+            scope: CoroutineScope
+        ): FaceDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
@@ -55,4 +56,5 @@ abstract class FaceDatabase : RoomDatabase() {
             }
         }
     }
+
 }

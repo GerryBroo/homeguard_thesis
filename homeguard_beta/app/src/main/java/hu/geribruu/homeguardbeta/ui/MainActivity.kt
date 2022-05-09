@@ -67,8 +67,7 @@ class MainActivity : AppCompatActivity() {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
-    fun getOutputDirectory(): String {
-
+    private fun getOutputDirectory(): String {
         val mediaDir = externalMediaDirs?.firstOrNull().let {
             File(it, resources.getString(R.string.app_name)).apply { mkdirs() } }
         return if (mediaDir.exists())

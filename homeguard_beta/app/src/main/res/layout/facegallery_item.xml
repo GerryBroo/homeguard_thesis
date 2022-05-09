@@ -36,4 +36,15 @@
         android:textSize="10sp">
     </TextView>
 
+    <ImageButton
+        android:id="@+id/btn_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_delete"
+        android:layout_toRightOf="@+id/tv_date_gallery_item"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        >
+    </ImageButton>
+
 </RelativeLayout>

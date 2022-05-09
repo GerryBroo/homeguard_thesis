@@ -19,6 +19,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -58,12 +59,13 @@ class CameraPreviewFragment : Fragment() {
 
     @Inject
     lateinit var imageAnalyzer: ImageAnalyzer
-
     @Inject
     lateinit var faceDetector: FaceDetector
-
     @Inject
     lateinit var faceCaptureManager: FaceCaptureManager
+    @Inject
+    lateinit var imageCapture: ImageCapture
+
 
     private val viewModel: CameraPreviewViewModel by viewModels()
 
@@ -319,7 +321,7 @@ class CameraPreviewFragment : Fragment() {
         })
         cameraProvider.bindToLifecycle(
             (this as LifecycleOwner),
-            cameraSelector!!, imageAnalysis, preview
+            cameraSelector!!, imageAnalysis, preview, imageCapture
         )
     }
 

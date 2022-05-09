@@ -34,15 +34,19 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
         private val tvFaceCaptureDate: TextView = itemView.tv_date_gallery_item
         private val imgFace: CircleImageView = itemView.img_gallery_item
 
-        fun bind(bird: RecognizedFace, position: Int) {
-            tvFaceName.text = bird.name
-            tvFaceCaptureDate.text = bird.captureDate
+        fun bind(face: RecognizedFace, position: Int) {
+            tvFaceName.text = face.name
+            tvFaceCaptureDate.text = face.captureDate
 
-            val imgFile = File(bird.faceUrl)
+            val imgFile = File(face.faceUrl)
             Picasso.get().load(imgFile).into(imgFace)
 
             itemView.setOnClickListener {
-                onClick.onClick(bird.id)
+                onClick.onClick(face.id)
+            }
+
+            itemView.btn_delete.setOnClickListener {
+                onClick.onDelete(face)
             }
         }
 
@@ -69,5 +73,6 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
 
     interface FaceClickListener {
         fun onClick(id: Long)
+        fun onDelete(face: RecognizedFace)
     }
 }

@@ -1,8 +1,6 @@
 package hu.geribruu.homeguardbeta.feature.face_detection.di
 
-import android.app.Application
 import android.content.Context
-import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,16 +22,16 @@ object DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideDatabase(@ApplicationContext appContext: Context): FaceDatabase {
+    fun provideFaceDatabase(@ApplicationContext appContext: Context): FaceDatabase {
         return FaceDatabase.getDatabase(appContext, applicationScope)
     }
 
     @Provides
     fun provideFaceDao(database: FaceDatabase): FaceDao = database.faceDao()
 
-    @Provides
     @Singleton
-    fun provideFaceRepository(db: FaceDatabase): FaceRepositoryImpl {
-        return FaceRepositoryImpl(db.faceDao())
+    @Provides
+    fun provideRepository(faceDao: FaceDao): FaceRepositoryImpl {
+        return FaceRepositoryImpl(faceDao)
     }
 }

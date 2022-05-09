@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class FaceRepositoryImpl @Inject constructor(
     private val dao: FaceDao
-): FaceRepository {
+) : FaceRepository {
 
     override fun getFaces(): Flow<List<RecognizedFace>> {
         return dao.getFace()
@@ -25,6 +25,4 @@ class FaceRepositoryImpl @Inject constructor(
     override suspend fun deleteFace(face: RecognizedFace) {
         dao.deleteFace(face)
     }
-
-
 }

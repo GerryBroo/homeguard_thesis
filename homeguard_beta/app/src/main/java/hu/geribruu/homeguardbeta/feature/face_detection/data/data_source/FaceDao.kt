@@ -19,6 +19,6 @@ interface FaceDao {
     @Delete
     suspend fun deleteFace(face: RecognizedFace)
 
-    @Query("DELETE FROM bird")
+    @Query("DELETE FROM face")
     suspend fun deleteAll()
 }

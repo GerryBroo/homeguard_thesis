@@ -1,7 +1,7 @@
 package hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition
 
+import hu.geribruu.homeguardbeta.feature.face_detection.data.repository.FaceRepositoryImpl
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.model.RecognizedFace
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.repository.FaceRepository
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -10,10 +10,14 @@ import javax.inject.Inject
 
 class FaceCaptureManager @Inject constructor(
     private val photoCapture: PhotoCapture,
-    private val repository: FaceRepository
+    private val repository: FaceRepositoryImpl
 ) {
+
     fun manageNewFace(name: String) {
-        val date = SimpleDateFormat(PhotoCapture.FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
+        val date = SimpleDateFormat(
+            PhotoCapture.FILENAME_FORMAT,
+            Locale.US
+        ).format(System.currentTimeMillis())
         val url = photoCapture.takePhoto()
 
         GlobalScope.launch {
