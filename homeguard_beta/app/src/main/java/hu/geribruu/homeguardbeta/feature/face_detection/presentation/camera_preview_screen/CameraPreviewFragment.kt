@@ -37,10 +37,7 @@ import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.FaceCaptureManager
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.ImageAnalyzer
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.SimilarityClassifier
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getCropBitmapByCPU
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getResizedBitmap
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.rotateBitmap
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.toBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.*
 import hu.geribruu.homeguardbeta.ui.MainActivity
 import kotlinx.coroutines.flow.collectLatest
 import java.nio.ByteBuffer
@@ -115,6 +112,8 @@ class CameraPreviewFragment : Fragment() {
         recognize = binding.button3
         cameraSwitch = binding.btnFlipCamera
         textAbovePreview.text = getString(R.string.camera_recognized_faces)
+
+        registered = readFromSP(context!!)
 
         //Camera Permission
         if (activity!!.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -206,6 +205,7 @@ class CameraPreviewFragment : Fragment() {
                 start = true
 
                 faceCaptureManager.manageNewFace(name)
+                insertToSP(context!!, registered) //mode: 0:save all, 1:clear all, 2:update all
             }
             builder.setNegativeButton(
                 "Cancel"

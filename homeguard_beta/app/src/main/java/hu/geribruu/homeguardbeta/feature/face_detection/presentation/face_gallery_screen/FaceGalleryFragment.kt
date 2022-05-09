@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentFaceGalleryBinding
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.deleteFromSP
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.model.RecognizedFace
 import hu.geribruu.homeguardbeta.feature.face_detection.presentation.face_gallery_screen.adapter.FaceGalleryAdapter
 import kotlinx.android.synthetic.main.fragment_face_gallery.*
@@ -65,6 +66,8 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
     override fun onDelete(face: RecognizedFace) {
         val file = File(face.faceUrl)
         file.delete()
+
+        deleteFromSP(context!!, face.name)
 
         viewModel.deleteFace(face)
     }
