@@ -1,33 +1,37 @@
 package hu.geribruu.homeguardbeta.feature.face_detection.di
 
-import android.app.Application
-import androidx.room.Room
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import hu.geribruu.homeguardbeta.feature.face_detection.data.data_source.FaceDao
 import hu.geribruu.homeguardbeta.feature.face_detection.data.data_source.FaceDatabase
 import hu.geribruu.homeguardbeta.feature.face_detection.data.repository.FaceRepositoryImpl
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.repository.FaceRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    @Provides
+    private val applicationScope = CoroutineScope(SupervisorJob())
+
     @Singleton
-    fun provideFaceDatabase(app: Application): FaceDatabase {
-        return Room.databaseBuilder(
-            app,
-            FaceDatabase::class.java,
-            FaceDatabase.DATABASE_NAME
-        ).build()
+    @Provides
+    fun provideFaceDatabase(@ApplicationContext appContext: Context): FaceDatabase {
+        return FaceDatabase.getDatabase(appContext, applicationScope)
     }
 
     @Provides
+    fun provideFaceDao(database: FaceDatabase): FaceDao = database.faceDao()
+
     @Singleton
-    fun provideFaceRepository(db: FaceDatabase): FaceRepository {
-        return FaceRepositoryImpl(db.faceDao)
+    @Provides
+    fun provideRepository(faceDao: FaceDao): FaceRepositoryImpl {
+        return FaceRepositoryImpl(faceDao)
     }
 }

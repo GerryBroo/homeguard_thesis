@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.Log
 import android.util.Pair
-import com.google.mlkit.vision.face.FaceDetector
 import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +19,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -30,15 +30,14 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.FaceDetector
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.FaceCaptureManager
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.ImageAnalyzer
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.SimilarityClassifier
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getCropBitmapByCPU
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getResizedBitmap
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.rotateBitmap
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.toBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.*
 import hu.geribruu.homeguardbeta.ui.MainActivity
 import kotlinx.coroutines.flow.collectLatest
 import java.nio.ByteBuffer
@@ -57,9 +56,13 @@ class CameraPreviewFragment : Fragment() {
 
     @Inject
     lateinit var imageAnalyzer: ImageAnalyzer
-
     @Inject
     lateinit var faceDetector: FaceDetector
+    @Inject
+    lateinit var faceCaptureManager: FaceCaptureManager
+    @Inject
+    lateinit var imageCapture: ImageCapture
+
 
     private val viewModel: CameraPreviewViewModel by viewModels()
 
@@ -109,6 +112,8 @@ class CameraPreviewFragment : Fragment() {
         recognize = binding.button3
         cameraSwitch = binding.btnFlipCamera
         textAbovePreview.text = getString(R.string.camera_recognized_faces)
+
+        registered = readFromSP(context!!)
 
         //Camera Permission
         if (activity!!.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -193,9 +198,14 @@ class CameraPreviewFragment : Fragment() {
                 val result = SimilarityClassifier.Recognition(
                     "0", "", -1f
                 )
+                val name = input.text.toString()
+
                 result.extra = embeedings
-                registered[input.text.toString()] = result
+                registered[name] = result
                 start = true
+
+                faceCaptureManager.manageNewFace(name)
+                insertToSP(context!!, registered) //mode: 0:save all, 1:clear all, 2:update all
             }
             builder.setNegativeButton(
                 "Cancel"
@@ -311,7 +321,7 @@ class CameraPreviewFragment : Fragment() {
         })
         cameraProvider.bindToLifecycle(
             (this as LifecycleOwner),
-            cameraSelector!!, imageAnalysis, preview
+            cameraSelector!!, imageAnalysis, preview, imageCapture
         )
     }
 

@@ -4,26 +4,25 @@ import hu.geribruu.homeguardbeta.feature.face_detection.data.data_source.FaceDao
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.model.RecognizedFace
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.repository.FaceRepository
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class FaceRepositoryImpl(
+class FaceRepositoryImpl @Inject constructor(
     private val dao: FaceDao
-): FaceRepository {
+) : FaceRepository {
 
     override fun getFaces(): Flow<List<RecognizedFace>> {
-        TODO("Not yet implemented")
+        return dao.getFace()
     }
 
     override suspend fun getFaceById(id: Int): RecognizedFace? {
-        TODO("Not yet implemented")
+        return dao.getFaceById(id)
     }
 
     override suspend fun insertFace(face: RecognizedFace) {
-        TODO("Not yet implemented")
+        dao.insertFace(face)
     }
 
     override suspend fun deleteFace(face: RecognizedFace) {
-        TODO("Not yet implemented")
+        dao.deleteFace(face)
     }
-
-
 }
