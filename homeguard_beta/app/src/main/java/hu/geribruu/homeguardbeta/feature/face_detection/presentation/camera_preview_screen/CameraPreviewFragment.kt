@@ -14,7 +14,12 @@ import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.CameraSelector
@@ -37,12 +42,16 @@ import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.FaceCaptureManager
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.ImageAnalyzer
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.SimilarityClassifier
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.*
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getCropBitmapByCPU
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getResizedBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.insertToSP
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.readFromSP
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.rotateBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.toBitmap
 import hu.geribruu.homeguardbeta.ui.MainActivity
 import kotlinx.coroutines.flow.collectLatest
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -56,13 +65,15 @@ class CameraPreviewFragment : Fragment() {
 
     @Inject
     lateinit var imageAnalyzer: ImageAnalyzer
+
     @Inject
     lateinit var faceDetector: FaceDetector
+
     @Inject
     lateinit var faceCaptureManager: FaceCaptureManager
+
     @Inject
     lateinit var imageCapture: ImageCapture
-
 
     private val viewModel: CameraPreviewViewModel by viewModels()
 
@@ -77,18 +88,18 @@ class CameraPreviewFragment : Fragment() {
 
     private var start = true
     private var flipX = false
-    private var cameraDirection = CameraSelector.LENS_FACING_FRONT //Default FRONT Camera
+    private var cameraDirection = CameraSelector.LENS_FACING_FRONT // Default FRONT Camera
 
     private lateinit var embeedings: Array<FloatArray>
     private lateinit var cameraProvider: ProcessCameraProvider
     private var registered: HashMap<String?, SimilarityClassifier.Recognition> =
-        HashMap<String?, SimilarityClassifier.Recognition>() //saved Faces
+        HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
 
-    var inputSize = 112 //Input size for model
+    var inputSize = 112 // Input size for model
 
     var IMAGE_MEAN = 128.0f
     var IMAGE_STD = 128.0f
-    var OUTPUT_SIZE = 192 //Output size of model
+    var OUTPUT_SIZE = 192 // Output size of model
 
     var isModelQuantized = false
     lateinit var intValues: IntArray
@@ -97,7 +108,7 @@ class CameraPreviewFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentCameraPreviewBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -115,12 +126,12 @@ class CameraPreviewFragment : Fragment() {
 
         registered = readFromSP(context!!)
 
-        //Camera Permission
+        // Camera Permission
         if (activity!!.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.CAMERA), MY_CAMERA_REQUEST_CODE)
         }
 
-        //On-screen switch to toggle between Cameras.
+        // On-screen switch to toggle between Cameras.
         cameraSwitch.setOnClickListener {
             if (cameraDirection == CameraSelector.LENS_FACING_BACK) {
                 cameraDirection = CameraSelector.LENS_FACING_FRONT
@@ -141,7 +152,7 @@ class CameraPreviewFragment : Fragment() {
                 addFaceBtn.visibility = View.INVISIBLE
                 recoName.visibility = View.VISIBLE
                 facePreview.visibility = View.INVISIBLE
-                //preview_info.setVisibility(View.INVISIBLE);
+                // preview_info.setVisibility(View.INVISIBLE);
             } else {
                 textAbovePreview.text = getString(R.string.camera_recognized_faces)
                 recognize.text = getString(R.string.camera_recognize)
@@ -192,9 +203,9 @@ class CameraPreviewFragment : Fragment() {
             // Set up the buttons
             builder.setPositiveButton(
                 "ADD"
-            ) { _, _ -> //Toast.makeText(context, input.getText().toString(), Toast.LENGTH_SHORT).show();
+            ) { _, _ -> // Toast.makeText(context, input.getText().toString(), Toast.LENGTH_SHORT).show();
 
-                //Create and Initialize new object with Face embeddings and Name.
+                // Create and Initialize new object with Face embeddings and Name.
                 val result = SimilarityClassifier.Recognition(
                     "0", "", -1f
                 )
@@ -205,7 +216,7 @@ class CameraPreviewFragment : Fragment() {
                 start = true
 
                 faceCaptureManager.manageNewFace(name)
-                insertToSP(context!!, registered) //mode: 0:save all, 1:clear all, 2:update all
+                insertToSP(context!!, registered) // mode: 0:save all, 1:clear all, 2:update all
             }
             builder.setNegativeButton(
                 "Cancel"
@@ -220,7 +231,7 @@ class CameraPreviewFragment : Fragment() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == MY_CAMERA_REQUEST_CODE) {
@@ -232,7 +243,7 @@ class CameraPreviewFragment : Fragment() {
         }
     }
 
-    //Bind camera and preview view
+    // Bind camera and preview view
     private fun cameraBind() {
         cameraProviderFuture = ProcessCameraProvider.getInstance(context!!)
         previewView = binding.previewView
@@ -258,18 +269,19 @@ class CameraPreviewFragment : Fragment() {
         preview.setSurfaceProvider(previewView!!.surfaceProvider)
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(Size(640, 480))
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST) //Latest frame is shown
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST) // Latest frame is shown
             .build()
         val executor: Executor = Executors.newSingleThreadExecutor()
-        imageAnalysis.setAnalyzer(executor, { imageProxy ->
+        imageAnalysis.setAnalyzer(executor) { imageProxy ->
             try {
-                Thread.sleep(0) //Camera preview refreshed every 10 millisec(adjust as required)
+                Thread.sleep(0) // Camera preview refreshed every 10 millisec(adjust as required)
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             }
             var image: InputImage? = null
-            @SuppressLint("UnsafeExperimentalUsageError") val mediaImage// Camera Feed-->Analyzer-->ImageProxy-->mediaImage-->InputImage(needed for ML kit face detection)
-                    = imageProxy.image
+            @SuppressLint("UnsafeExperimentalUsageError") val mediaImage =
+                // Camera Feed-->Analyzer-->ImageProxy-->mediaImage-->InputImage(needed for ML kit face detection)
+                imageProxy.image
             if (mediaImage != null) {
                 image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                 //                    System.out.println("Rotation "+imageProxy.getImageInfo().getRotationDegrees());
@@ -277,33 +289,32 @@ class CameraPreviewFragment : Fragment() {
 
             //                System.out.println("ANALYSIS");
 
-            //Process acquired image to detect faces
+            // Process acquired image to detect faces
             val result = faceDetector!!.process(image)
                 .addOnSuccessListener { faces ->
                     if (faces.size != 0) {
-                        val face = faces[0] //Get first face from detected faces
+                        val face = faces[0] // Get first face from detected faces
                         //                                                    System.out.println(face);
 
-                        //mediaImage to Bitmap
+                        // mediaImage to Bitmap
                         val frame_bmp = toBitmap(mediaImage)
                         val rot = imageProxy.imageInfo.rotationDegrees
 
-                        //Adjust orientation of Face
+                        // Adjust orientation of Face
                         val frame_bmp1 =
                             rotateBitmap(frame_bmp, rot, false, false)
 
-
-                        //Get bounding box of face
+                        // Get bounding box of face
                         val boundingBox = RectF(face.boundingBox)
 
-                        //Crop out bounding box from whole Bitmap(image)
+                        // Crop out bounding box from whole Bitmap(image)
                         var cropped_face =
                             getCropBitmapByCPU(frame_bmp1, boundingBox)
                         if (flipX) cropped_face =
                             rotateBitmap(cropped_face, 0, flipX, false)
-                        //Scale the acquired Face to 112*112 which is required input for model
+                        // Scale the acquired Face to 112*112 which is required input for model
                         val scaled = getResizedBitmap(cropped_face, 112, 112)
-                        if (start) recognizeImage(scaled) //Send scaled bitmap to create face embeddings.
+                        if (start) recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
                         //                                                    System.out.println(boundingBox);
                     } else {
                         if (registered.isEmpty()) recoName.text =
@@ -316,15 +327,14 @@ class CameraPreviewFragment : Fragment() {
                     // ...
                 }
                 .addOnCompleteListener {
-                    imageProxy.close() //v.important to acquire next frame for analysis
+                    imageProxy.close() // v.important to acquire next frame for analysis
                 }
-        })
+        }
         cameraProvider.bindToLifecycle(
             (this as LifecycleOwner),
             cameraSelector!!, imageAnalysis, preview, imageCapture
         )
     }
-
 
     /*
     @SuppressLint("UnsafeOptInUsageError")
@@ -350,7 +360,6 @@ class CameraPreviewFragment : Fragment() {
     }
     */
 
-
     companion object {
         private const val MY_CAMERA_REQUEST_CODE = 100
     }
@@ -360,12 +369,12 @@ class CameraPreviewFragment : Fragment() {
         // set Face to Preview
         facePreview.setImageBitmap(bitmap)
 
-        //Create ByteBuffer to store normalized image
+        // Create ByteBuffer to store normalized image
         val imgData = ByteBuffer.allocateDirect(1 * inputSize * inputSize * 3 * 4)
         imgData.order(ByteOrder.nativeOrder())
         intValues = IntArray(inputSize * inputSize)
 
-        //get pixel values from Bitmap to normalize
+        // get pixel values from Bitmap to normalize
         bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
         imgData.rewind()
         for (i in 0 until inputSize) {
@@ -383,38 +392,37 @@ class CameraPreviewFragment : Fragment() {
                 }
             }
         }
-        //imgData is input to our model
+        // imgData is input to our model
         val inputArray = arrayOf<Any>(imgData)
         val outputMap: MutableMap<Int, Any> = HashMap()
         embeedings =
-            Array(1) { FloatArray(OUTPUT_SIZE) } //output of model will be stored in this variable
+            Array(1) { FloatArray(OUTPUT_SIZE) } // output of model will be stored in this variable
         outputMap[0] = embeedings
-        MainActivity.tfLite.runForMultipleInputsOutputs(inputArray, outputMap) //Run model
+        MainActivity.tfLite.runForMultipleInputsOutputs(inputArray, outputMap) // Run model
         var distance_local = Float.MAX_VALUE
         val id = "0"
         val label = "?"
 
-        //Compare new face with saved Faces.
+        // Compare new face with saved Faces.
         if (registered.size > 0) {
-            val nearest = findNearest(embeedings[0]) //Find 2 closest matching face
+            val nearest = findNearest(embeedings[0]) // Find 2 closest matching face
             if (nearest[0] != null) {
-                val name = nearest[0]!!.first //get name and distance of closest matching face
+                val name = nearest[0]!!.first // get name and distance of closest matching face
                 // label = name;
                 distance_local = nearest[0]!!.second
 
-                if (distance_local < 1.0f) //If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
+                if (distance_local < 1.0f) // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
                     recoName.text = name else recoName.text = "Unknown"
                 //                    System.out.println("nearest: " + name + " - distance: " + distance_local);
-
             }
         }
     }
 
-    //Compare Faces by distance between face embeddings
+    // Compare Faces by distance between face embeddings
     private fun findNearest(emb: FloatArray): List<Pair<String, Float>?> {
         val neighbour_list: MutableList<Pair<String, Float>?> = ArrayList()
-        var ret: Pair<String, Float>? = null //to get closest match
-        var prev_ret: Pair<String, Float>? = null //to get second closest match
+        var ret: Pair<String, Float>? = null // to get closest match
+        var prev_ret: Pair<String, Float>? = null // to get second closest match
         for ((name, value) in registered) {
             val knownEmb: FloatArray = ((value.extra) as Array<*>)[0] as FloatArray
             var distance = 0f

@@ -5,12 +5,12 @@ import hu.geribruu.homeguardbeta.feature.face_detection.domain.model.RecognizedF
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 class FaceCaptureManager @Inject constructor(
     private val photoCapture: PhotoCapture,
-    private val repository: FaceRepositoryImpl
+    private val repository: FaceRepositoryImpl,
 ) {
 
     fun manageNewFace(name: String) {
