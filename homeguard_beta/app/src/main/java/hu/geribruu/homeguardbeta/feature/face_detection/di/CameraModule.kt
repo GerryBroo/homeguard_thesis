@@ -9,11 +9,13 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import hu.geribruu.homeguardbeta.feature.face_detection.data.repository.FaceRepositoryImpl
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.FaceCaptureManager
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.CustomFaceDetector
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.FaceCaptureManager
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.ImageAnalyzer
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.ImageManager
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.PhotoCapture
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.repository.FaceRepository
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.use_case.CameraUseCases
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.use_case.GetCameraPreviewUseCase
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Singleton
@@ -30,19 +32,25 @@ object CameraModule {
 
     @Singleton
     @Provides
-    fun providesImageCapture() : ImageCapture {
+    fun providesImageCapture(): ImageCapture {
         return ImageCapture.Builder().build()
     }
 
     @Singleton
     @Provides
-    fun providesPhotoCapture(@ApplicationContext appContext: Context, imageCapture : ImageCapture) : PhotoCapture {
+    fun providesPhotoCapture(
+        @ApplicationContext appContext: Context,
+        imageCapture: ImageCapture,
+    ): PhotoCapture {
         return PhotoCapture(appContext, imageCapture)
     }
 
     @Singleton
     @Provides
-    fun providesCaptureManager(photoCapture: PhotoCapture, repository: FaceRepositoryImpl): FaceCaptureManager {
+    fun providesCaptureManager(
+        photoCapture: PhotoCapture,
+        repository: FaceRepositoryImpl,
+    ): FaceCaptureManager {
         return FaceCaptureManager(photoCapture, repository)
     }
 
@@ -57,8 +65,22 @@ object CameraModule {
     fun providesImageAnalyzer(
         @ApplicationContext appContext: Context,
         faceDetector: FaceDetector,
-        faceCaptureManager: FaceCaptureManager
+        faceCaptureManager: FaceCaptureManager,
     ): ImageAnalyzer {
         return ImageAnalyzer(appContext, faceDetector, faceCaptureManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideImageManager(imageAnalyzer: ImageAnalyzer): ImageManager {
+        return ImageManager(imageAnalyzer)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCameraUsesCases(imageManager: ImageManager): CameraUseCases {
+        return CameraUseCases(
+            getCameraPreviewUseCase = GetCameraPreviewUseCase(imageManager)
+        )
     }
 }
