@@ -1,6 +1,7 @@
 package hu.geribruu.homeguardbeta.di
 
 import android.content.Context
+import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,7 +23,11 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideFaceDatabase(@ApplicationContext appContext: Context): FaceDatabase {
-        return FaceDatabase.getDatabase(appContext, applicationScope)
+        return Room.databaseBuilder(
+            appContext,
+            FaceDatabase::class.java,
+            "face"
+        ).build()
     }
 
     @Provides
@@ -30,7 +35,7 @@ object DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideRepository(faceDao: FaceDao): FaceDiskDataSource {
+    fun provideFaceDiskDataSource(faceDao: FaceDao): FaceDiskDataSource {
         return FaceDiskDataSource(faceDao)
     }
 }
