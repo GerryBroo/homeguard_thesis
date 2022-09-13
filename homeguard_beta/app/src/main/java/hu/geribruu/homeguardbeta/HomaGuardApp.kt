@@ -6,7 +6,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
-import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.FaceCaptureManager
+import hu.geribruu.homeguardbeta.domain.faceRecognition.FaceCaptureManager
 
 @HiltAndroidApp
 class HomaGuardApp : Application() {

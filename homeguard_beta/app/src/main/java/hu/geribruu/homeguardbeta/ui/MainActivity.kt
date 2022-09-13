@@ -2,12 +2,12 @@ package hu.geribruu.homeguardbeta.ui
 
 import android.app.Activity
 import android.os.Bundle
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.databinding.ActivityMainBinding
@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object LoadFile {
         lateinit var tfLite: Interpreter
-        lateinit var outputFileUri : String
+        lateinit var outputFileUri: String
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        //Load model
+        // Load model
         try {
             tfLite = Interpreter(loadModelFile(this@MainActivity, "mobile_face_net.tflite"))
         } catch (e: IOException) {
@@ -69,7 +69,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun getOutputDirectory(): String {
         val mediaDir = externalMediaDirs?.firstOrNull().let {
-            File(it, resources.getString(R.string.app_name)).apply { mkdirs() } }
+            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+        }
         return if (mediaDir.exists())
             mediaDir.toString() else filesDir.toString()
     }

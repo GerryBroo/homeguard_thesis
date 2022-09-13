@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".feature.face_detection.presentation.face_gallery_screen.FaceGalleryFragment">
+    tools:context=".ui.faceGalleryScreen.FaceGalleryFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_gallery"

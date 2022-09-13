@@ -1,0 +1,86 @@
+package hu.geribruu.homeguardbeta.di
+
+import android.content.Context
+import androidx.camera.core.ImageCapture
+import com.google.mlkit.vision.face.FaceDetector
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import hu.geribruu.homeguardbeta.data.face.disk.FaceDiskDataSource
+import hu.geribruu.homeguardbeta.domain.faceRecognition.CustomFaceDetector
+import hu.geribruu.homeguardbeta.domain.faceRecognition.FaceCaptureManager
+import hu.geribruu.homeguardbeta.domain.faceRecognition.ImageAnalyzer
+import hu.geribruu.homeguardbeta.domain.faceRecognition.ImageManager
+import hu.geribruu.homeguardbeta.domain.faceRecognition.PhotoCapture
+import hu.geribruu.homeguardbeta.domain.faceRecognition.useCase.CameraUseCases
+import hu.geribruu.homeguardbeta.domain.faceRecognition.useCase.GetCameraPreviewUseCase
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import javax.inject.Singleton
+
+@InstallIn(SingletonComponent::class)
+@Module
+object CameraModule {
+
+    @Singleton
+    @Provides
+    fun providesCameraExecutor(): ExecutorService {
+        return Executors.newSingleThreadExecutor()
+    }
+
+    @Singleton
+    @Provides
+    fun providesImageCapture(): ImageCapture {
+        return ImageCapture.Builder().build()
+    }
+
+    @Singleton
+    @Provides
+    fun providesPhotoCapture(
+        @ApplicationContext appContext: Context,
+        imageCapture: ImageCapture,
+    ): PhotoCapture {
+        return PhotoCapture(appContext, imageCapture)
+    }
+
+    @Singleton
+    @Provides
+    fun providesCaptureManager(
+        photoCapture: PhotoCapture,
+        repository: FaceDiskDataSource,
+    ): FaceCaptureManager {
+        return FaceCaptureManager(photoCapture, repository)
+    }
+
+    @Singleton
+    @Provides
+    fun providesFaceDetector(): FaceDetector {
+        return CustomFaceDetector().faceDetector
+    }
+
+    @Singleton
+    @Provides
+    fun providesImageAnalyzer(
+        @ApplicationContext appContext: Context,
+        faceDetector: FaceDetector,
+        faceCaptureManager: FaceCaptureManager,
+    ): ImageAnalyzer {
+        return ImageAnalyzer(appContext, faceDetector, faceCaptureManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideImageManager(imageAnalyzer: ImageAnalyzer): ImageManager {
+        return ImageManager(imageAnalyzer)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCameraUsesCases(imageManager: ImageManager): CameraUseCases {
+        return CameraUseCases(
+            getCameraPreviewUseCase = GetCameraPreviewUseCase(imageManager)
+        )
+    }
+}
