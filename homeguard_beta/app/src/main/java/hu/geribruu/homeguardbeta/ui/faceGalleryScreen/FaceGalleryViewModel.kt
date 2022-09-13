@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FaceGalleryViewModel @Inject constructor(
-    private val repository: FaceDiskDataSource
+    private val repository: FaceDiskDataSource,
 ) : ViewModel() {
 
     val faces: LiveData<List<RecognizedFace>> = repository.getFaces().asLiveData()

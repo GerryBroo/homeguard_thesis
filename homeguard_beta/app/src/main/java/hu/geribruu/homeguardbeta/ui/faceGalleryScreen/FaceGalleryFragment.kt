@@ -10,10 +10,10 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentFaceGalleryBinding
-import hu.geribruu.homeguardbeta.domain.faceRecognition.util.deleteFromSP
 import hu.geribruu.homeguardbeta.domain.faceRecognition.model.RecognizedFace
+import hu.geribruu.homeguardbeta.domain.faceRecognition.util.deleteFromSP
 import hu.geribruu.homeguardbeta.ui.faceGalleryScreen.adapter.FaceGalleryAdapter
-import kotlinx.android.synthetic.main.fragment_face_gallery.*
+import kotlinx.android.synthetic.main.fragment_face_gallery.recyclerview_gallery
 import java.io.File
 
 @AndroidEntryPoint
@@ -28,12 +28,11 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         _binding = FragmentFaceGalleryBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
-        return root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -70,7 +69,7 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
         val file = File(face.faceUrl)
         file.delete()
 
-        deleteFromSP(context!!, face.name)
+        deleteFromSP(requireContext(), face.name)
 
         viewModel.deleteFace(face)
     }
