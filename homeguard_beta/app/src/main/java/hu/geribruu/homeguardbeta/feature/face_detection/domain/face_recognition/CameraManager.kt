@@ -1,11 +1,14 @@
 package hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
+import android.text.InputType
 import android.util.Pair
 import android.util.Size
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.camera.core.Camera
@@ -20,14 +23,17 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
-import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import hu.geribruu.homeguardbeta.HomaGuardApp
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getCropBitmapByCPU
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.getResizedBitmap
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.insertToSP
+import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.readFromSP
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.rotateBitmap
 import hu.geribruu.homeguardbeta.feature.face_detection.domain.face_recognition.util.toBitmap
 import hu.geribruu.homeguardbeta.ui.MainActivity
@@ -39,16 +45,23 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Inject
 
-class CameraManager(
+class CameraManager @Inject constructor(
     private val owner: LifecycleOwner,
     private val context: Context,
     private val viewPreview: PreviewView,
     private val recoName: TextView,
-    private val facePreview: ImageView,
+    private val facePreview: ImageView
 ) {
 
-    @Inject
-    lateinit var imageCapture: ImageCapture
+
+//    @Inject
+//    lateinit var faceCaptureManager: FaceCaptureManager
+
+
+//
+//    val faceCaptureManager = EntryPoints.get(context, InitializerEntryPoint::class.java).faceCaptureManager()
+    val faceCaptureManager = EntryPointAccessors.fromApplication(context, HomaGuardApp.InitializerEntryPoint::class.java).faceCaptureManager()
+    val imageCapture = EntryPointAccessors.fromApplication(context, HomaGuardApp.InitializerEntryPoint::class.java).imageCapture()
 
     private val faceDetectorOption = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -103,6 +116,8 @@ class CameraManager(
             controlWhichCameraToDisplay(frontCamera = onFrontCamera)
             bindCameraUseCases()
         }, ContextCompat.getMainExecutor(context))
+
+        registered = readFromSP(context!!)
     }
 
     private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
@@ -196,7 +211,8 @@ class CameraManager(
             owner,
             getCameraSelector(),
             preview,
-            imageAnalysis
+            imageAnalysis,
+            imageCapture
         )
     }
 
@@ -210,6 +226,47 @@ class CameraManager(
         return Preview.Builder()
             .setTargetRotation(viewPreview.display.rotation)
             .build()
+    }
+
+    fun addFace() {
+
+        run {
+            start = false
+            val builder =
+                AlertDialog.Builder(context!!)
+            builder.setTitle("Enter Name")
+
+            // Set up the input
+            val input = EditText(context)
+            input.inputType = InputType.TYPE_CLASS_TEXT
+            builder.setView(input)
+
+            // Set up the buttons
+            builder.setPositiveButton(
+                "ADD"
+            ) { _, _ -> // Toast.makeText(context, input.getText().toString(), Toast.LENGTH_SHORT).show();
+
+                // Create and Initialize new object with Face embeddings and Name.
+                val result = SimilarityClassifier.Recognition(
+                    "0", "", -1f
+                )
+                val name = input.text.toString()
+
+                result.extra = embeedings
+                registered[name] = result
+                start = true
+
+                faceCaptureManager.manageNewFace(name)
+                insertToSP(context!!, registered) // mode: 0:save all, 1:clear all, 2:update all
+            }
+            builder.setNegativeButton(
+                "Cancel"
+            ) { dialog, _ ->
+                start = true
+                dialog.cancel()
+            }
+            builder.show()
+        }
     }
 
     fun recognizeImage(bitmap: Bitmap) {

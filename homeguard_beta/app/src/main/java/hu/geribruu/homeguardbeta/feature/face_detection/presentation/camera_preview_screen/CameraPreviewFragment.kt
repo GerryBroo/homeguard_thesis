@@ -219,13 +219,14 @@ class CameraPreviewFragment : Fragment() {
         initUI()
         startCamera()
         controlCameraSelectCamera()
+        controlAddFace()
     }
 
     private fun initUI() {
         facePreview = binding.imageView
         recoName = binding.tvRecognitionInfo
         textAbovePreview = binding.textAbovePreview
-        addFaceBtn = binding.imageButton
+        addFaceBtn = binding.btnAddFace
         addFaceBtn.visibility = View.INVISIBLE
 
         facePreview.visibility = View.INVISIBLE
@@ -233,7 +234,6 @@ class CameraPreviewFragment : Fragment() {
         cameraSwitch = binding.btnFlipCamera
         textAbovePreview.text = getString(R.string.camera_recognized_faces)
 
-        addFaceBtn.setOnClickListener { /*addFace()*/ }
         recognize.setOnClickListener {
             if (recognize.text.toString() == "Recognize") {
                 textAbovePreview.text = getString(R.string.camera_recognized_faces)
@@ -271,6 +271,14 @@ class CameraPreviewFragment : Fragment() {
     private fun changeCamera(): Boolean {
         isLensFacingFront = !isLensFacingFront
         return isLensFacingFront
+    }
+
+    private fun controlAddFace() {
+        binding.btnAddFace.setOnClickListener { addFace() }
+    }
+
+    private fun addFace() {
+        cameraManager.addFace()
     }
 
     override fun onDestroy() {
