@@ -10,7 +10,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor() : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+        value = "Safe"
     }
     val text: LiveData<String> = _text
 }
