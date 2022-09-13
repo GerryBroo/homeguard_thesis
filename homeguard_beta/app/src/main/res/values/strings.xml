@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">HomeGuard Beta</string>
+    <string name="title_home">Home</string>
+    <string name="title_camera_preview">Camera Preview</string>
+    <string name="title_face_gallery">Face Gallery</string>
+
+    <string name="camera_recognized_faces">Recognized Face:</string>
+    <string name="camera_add_faces">Add Face</string>
+    <string name="camera_recognize">Recognize</string>
+
+</resources>
