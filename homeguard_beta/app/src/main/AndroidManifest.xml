@@ -3,9 +3,11 @@
     package="hu.geribruu.homeguardbeta">
 
     <uses-feature android:name="android.hardware.camera.any" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
     <application
@@ -16,6 +18,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.HomeGuardBeta">
+        <activity
+            android:name=".ui.addNewFaceScreen.AddNewFaceActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
