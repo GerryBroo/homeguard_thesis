@@ -64,7 +64,7 @@ class CameraPreviewFragment : Fragment() {
             owner = (this as LifecycleOwner),
             context = requireContext(),
             viewPreview = binding.previewViewCamera,
-            recognationName = binding.tvRecognitionInfo,
+            recognitionInfo = binding.tvRecognitionInfo,
             facePreview = null
         )
         cameraManager.startCamera(onFrontCamera = true)

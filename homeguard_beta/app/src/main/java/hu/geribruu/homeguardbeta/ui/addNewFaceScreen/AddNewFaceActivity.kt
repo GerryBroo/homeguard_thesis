@@ -1,8 +1,13 @@
 package hu.geribruu.homeguardbeta.ui.addNewFaceScreen
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.text.InputType
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.domain.faceRecognition.CameraManager
@@ -36,7 +41,7 @@ class AddNewFaceActivity : AppCompatActivity() {
             owner = (this as LifecycleOwner),
             context = this,
             viewPreview = previewView,
-            recognationName = tvRecognitionInfo,
+            recognitionInfo = tvRecognitionInfo,
             facePreview = facePreview
         )
         cameraManager.startCamera(onFrontCamera = true)
@@ -58,6 +63,42 @@ class AddNewFaceActivity : AppCompatActivity() {
     }
 
     private fun addFace() {
-        cameraManager.addFace()
+        when (cameraManager.isNewFaceAvailable()) {
+            is OkFace -> buildAlert()
+            is NoFace -> {
+                Toast.makeText(this, "No face detected!", Toast.LENGTH_SHORT).show()
+            }
+            is ExistingFace -> {
+                Toast.makeText(this, "This face is already existed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun buildAlert() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Enter Name")
+
+        val input = EditText(this)
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+
+        builder.setPositiveButton(
+            "ADD"
+        ) { _, _ ->
+            cameraManager.setNewFace(input.text.toString())
+            finish()
+        }
+        builder.setNegativeButton(
+            "Cancel"
+        ) { dialog, _ ->
+            finish()
+            dialog.cancel()
+        }
+        builder.show()
     }
 }
+
+sealed class FaceState
+object ExistingFace : FaceState()
+object NoFace : FaceState()
+object OkFace : FaceState()

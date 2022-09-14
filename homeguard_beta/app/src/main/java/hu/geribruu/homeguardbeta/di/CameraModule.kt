@@ -14,8 +14,6 @@ import hu.geribruu.homeguardbeta.domain.faceRecognition.FaceCaptureManager
 import hu.geribruu.homeguardbeta.domain.faceRecognition.ImageAnalyzer
 import hu.geribruu.homeguardbeta.domain.faceRecognition.ImageManager
 import hu.geribruu.homeguardbeta.domain.faceRecognition.PhotoCapture
-import hu.geribruu.homeguardbeta.domain.faceRecognition.useCase.CameraUseCases
-import hu.geribruu.homeguardbeta.domain.faceRecognition.useCase.GetCameraPreviewUseCase
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Singleton
@@ -48,10 +46,11 @@ object CameraModule {
     @Singleton
     @Provides
     fun providesCaptureManager(
+        @ApplicationContext appContext: Context,
         photoCapture: PhotoCapture,
         repository: FaceDiskDataSource,
     ): FaceCaptureManager {
-        return FaceCaptureManager(photoCapture, repository)
+        return FaceCaptureManager(appContext, photoCapture, repository)
     }
 
     @Singleton
@@ -74,13 +73,5 @@ object CameraModule {
     @Singleton
     fun provideImageManager(imageAnalyzer: ImageAnalyzer): ImageManager {
         return ImageManager(imageAnalyzer)
-    }
-
-    @Provides
-    @Singleton
-    fun provideCameraUsesCases(imageManager: ImageManager): CameraUseCases {
-        return CameraUseCases(
-            getCameraPreviewUseCase = GetCameraPreviewUseCase(imageManager)
-        )
     }
 }

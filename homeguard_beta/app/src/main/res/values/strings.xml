@@ -13,4 +13,7 @@
     <string name="safe_uppercase">SAFE</string>
     <string name="waitning_for_detection">Waitning for detection</string>
 
+    <string name="no_face">No face detected!</string>
+    <string name="existing_face">This face is already saved!</string>
+
 </resources>

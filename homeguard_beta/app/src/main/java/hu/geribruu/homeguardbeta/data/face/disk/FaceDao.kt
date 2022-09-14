@@ -21,7 +21,7 @@ interface FaceDao {
     fun insertFace(face: RecognizedFace)
 
     @Delete
-    fun deleteFace(face: RecognizedFace)
+    suspend fun deleteFace(face: RecognizedFace)
 
     @Query("DELETE FROM face")
     fun deleteAll()

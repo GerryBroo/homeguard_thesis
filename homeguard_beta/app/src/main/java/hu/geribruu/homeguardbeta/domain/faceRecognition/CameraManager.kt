@@ -1,14 +1,12 @@
 package hu.geribruu.homeguardbeta.domain.faceRecognition
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
-import android.text.InputType
+import android.util.Log
 import android.util.Pair
 import android.util.Size
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.camera.core.CameraSelector
@@ -27,11 +25,14 @@ import hu.geribruu.homeguardbeta.HomaGuardApp
 import hu.geribruu.homeguardbeta.domain.faceRecognition.model.SimilarityClassifier
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.getCropBitmapByCPU
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.getResizedBitmap
-import hu.geribruu.homeguardbeta.domain.faceRecognition.util.insertToSP
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.readFromSP
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.rotateBitmap
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.toBitmap
 import hu.geribruu.homeguardbeta.ui.MainActivity
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.ExistingFace
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.FaceState
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.NoFace
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.OkFace
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.ExecutionException
@@ -44,7 +45,7 @@ class CameraManager @Inject constructor(
     private val owner: LifecycleOwner,
     private val context: Context,
     private val viewPreview: PreviewView,
-    private val recognationName: TextView,
+    private val recognitionInfo: TextView,
     private val facePreview: ImageView?,
 ) {
 
@@ -65,7 +66,6 @@ class CameraManager @Inject constructor(
     val faceDetector = FaceDetection.getClient(faceDetectorOption)
 
     var flipX = false // todo ey is fontos
-    var start = true // todo kell
     var isModelQuantized = false // todo constans
     lateinit var intValues: IntArray // todo nem v'gom miert lateniat
     lateinit var embeedings: Array<FloatArray> // todo szinten nem vagom miert lateinit
@@ -76,7 +76,7 @@ class CameraManager @Inject constructor(
     var IMAGE_STD = 128.0f
     var OUTPUT_SIZE = 192 // Output size of model
 
-    private var registered: HashMap<String?, SimilarityClassifier.Recognition> =
+    var registered: HashMap<String?, SimilarityClassifier.Recognition> =
         HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
 
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
@@ -171,11 +171,9 @@ class CameraManager @Inject constructor(
                             rotateBitmap(cropped_face, 0, flipX, false)
                         // Scale the acquired Face to 112*112 which is required input for model
                         val scaled = getResizedBitmap(cropped_face, 112, 112)
-                        if (start) recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
+                        recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
                     } else {
-                        if (registered.isEmpty()) recognationName.text =
-                            "Add Face" else recognationName.text =
-                            "No Face Detected!"
+                        recognitionInfo.text = "No Face Detected!"
                     }
                 }
                 .addOnFailureListener {
@@ -209,45 +207,24 @@ class CameraManager @Inject constructor(
             .build()
     }
 
-    fun addFace() {
-
-        run {
-            start = false
-            val builder =
-                AlertDialog.Builder(context!!)
-            builder.setTitle("Enter Name")
-
-            // Set up the input
-            val input = EditText(context)
-            input.inputType = InputType.TYPE_CLASS_TEXT
-            builder.setView(input)
-
-            // Set up the buttons
-            builder.setPositiveButton(
-                "ADD"
-            ) { _, _ -> // Toast.makeText(context, input.getText().toString(), Toast.LENGTH_SHORT).show();
-
-                // Create and Initialize new object with Face embeddings and Name.
-                val result = SimilarityClassifier.Recognition(
-                    "0", "", -1f
-                )
-                val name = input.text.toString()
-
-                result.extra = embeedings
-                registered[name] = result
-                start = true
-
-                faceCaptureManager.manageNewFace(name)
-                insertToSP(context!!, registered) // mode: 0:save all, 1:clear all, 2:update all
-            }
-            builder.setNegativeButton(
-                "Cancel"
-            ) { dialog, _ ->
-                start = true
-                dialog.cancel()
-            }
-            builder.show()
+    fun isNewFaceAvailable(): FaceState {
+        return when(recognitionInfo.text.toString()) {
+            "Unknown" -> OkFace
+            "No Face Detected!" -> NoFace
+            else -> ExistingFace
         }
+    }
+
+    fun setNewFace(name: String) {
+
+        val result = SimilarityClassifier.Recognition(
+            "0", "", -1f
+        )
+
+        result.extra = embeedings
+        registered[name] = result
+
+        faceCaptureManager.manageNewFace(registered, name)
     }
 
     fun recognizeImage(bitmap: Bitmap) {
@@ -297,7 +274,7 @@ class CameraManager @Inject constructor(
                 distance_local = nearest[0]!!.second
 
                 if (distance_local < 1.0f) // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
-                    recognationName.text = name else recognationName.text = "Unknown"
+                    recognitionInfo.text = name else recognitionInfo.text = "Unknown"
             }
         }
     }
