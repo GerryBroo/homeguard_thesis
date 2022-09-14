@@ -45,7 +45,7 @@ class CameraManager @Inject constructor(
     private val context: Context,
     private val viewPreview: PreviewView,
     private val recognationName: TextView,
-    private val facePreview: ImageView,
+    private val facePreview: ImageView?,
 ) {
 
     val faceCaptureManager =
@@ -253,7 +253,7 @@ class CameraManager @Inject constructor(
     fun recognizeImage(bitmap: Bitmap) {
 
         // set Face to Preview
-        facePreview.setImageBitmap(bitmap)
+        facePreview?.setImageBitmap(bitmap)
 
         // Create ByteBuffer to store normalized image
         val imgData = ByteBuffer.allocateDirect(1 * inputSize * inputSize * 3 * 4)
