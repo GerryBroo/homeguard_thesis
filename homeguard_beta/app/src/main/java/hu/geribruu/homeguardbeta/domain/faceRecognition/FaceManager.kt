@@ -2,6 +2,8 @@ package hu.geribruu.homeguardbeta.domain.faceRecognition
 
 import android.content.Context
 import hu.geribruu.homeguardbeta.data.face.disk.FaceDiskDataSource
+import hu.geribruu.homeguardbeta.data.history.HistoryRepository
+import hu.geribruu.homeguardbeta.data.history.disk.model.RoomHistoryItem
 import hu.geribruu.homeguardbeta.domain.faceRecognition.model.RecognizedFace
 import hu.geribruu.homeguardbeta.domain.faceRecognition.model.SimilarityClassifier
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.insertToSP
@@ -15,6 +17,7 @@ class FaceManager @Inject constructor(
     private var context: Context,
     private val photoCapture: PhotoCapture,
     private val faceDiskDataSource: FaceDiskDataSource,
+    private val repository: HistoryRepository,
 ) {
 
     fun manageNewFace(
@@ -35,6 +38,13 @@ class FaceManager @Inject constructor(
     }
 
     fun manageFace(name: String) {
+        val date = SimpleDateFormat(
+            PhotoCapture.FILENAME_FORMAT,
+            Locale.US
+        ).format(System.currentTimeMillis())
 
+        repository.insertHistory(
+            RoomHistoryItem(0, name, date)
+        )
     }
 }

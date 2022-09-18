@@ -15,5 +15,7 @@
 
     <string name="no_face">No face detected!</string>
     <string name="existing_face">This face is already saved!</string>
+    <string name="history">History</string>
+    <string name="default_timer">2000.20.20</string>
 
 </resources>

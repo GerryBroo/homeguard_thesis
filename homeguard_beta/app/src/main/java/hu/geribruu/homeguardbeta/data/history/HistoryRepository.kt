@@ -22,14 +22,8 @@ class HistoryRepository @Inject constructor(
         }
     }
 
-    fun insertHistory(historyItem: HistoryItem) {
-        dao.insertHistoryItem(
-            RoomHistoryItem(
-                historyItem.id,
-                historyItem.name,
-                historyItem.captureDate
-            )
-        )
+    fun insertHistory(historyItem: RoomHistoryItem) {
+        dao.insertHistoryItem(historyItem)
     }
 
     fun deleteHistories() {
