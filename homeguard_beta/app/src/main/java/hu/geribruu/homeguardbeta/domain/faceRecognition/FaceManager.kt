@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 
-class FaceCaptureManager @Inject constructor(
+class FaceManager @Inject constructor(
     private var context: Context,
     private val photoCapture: PhotoCapture,
     private val faceDiskDataSource: FaceDiskDataSource,
@@ -21,7 +21,6 @@ class FaceCaptureManager @Inject constructor(
         registered: HashMap<String?, SimilarityClassifier.Recognition>,
         name: String,
     ) {
-
         insertToSP(context, registered)
 
         val date = SimpleDateFormat(
@@ -33,5 +32,9 @@ class FaceCaptureManager @Inject constructor(
         GlobalScope.launch {
             faceDiskDataSource.insertFace(RecognizedFace(0, name, date, url))
         }
+    }
+
+    fun manageFace(name: String) {
+
     }
 }

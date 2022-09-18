@@ -10,7 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import hu.geribruu.homeguardbeta.data.face.disk.FaceDiskDataSource
 import hu.geribruu.homeguardbeta.domain.faceRecognition.CustomFaceDetector
-import hu.geribruu.homeguardbeta.domain.faceRecognition.FaceCaptureManager
+import hu.geribruu.homeguardbeta.domain.faceRecognition.FaceManager
 import hu.geribruu.homeguardbeta.domain.faceRecognition.ImageAnalyzer
 import hu.geribruu.homeguardbeta.domain.faceRecognition.ImageManager
 import hu.geribruu.homeguardbeta.domain.faceRecognition.PhotoCapture
@@ -49,8 +49,8 @@ object CameraModule {
         @ApplicationContext appContext: Context,
         photoCapture: PhotoCapture,
         repository: FaceDiskDataSource,
-    ): FaceCaptureManager {
-        return FaceCaptureManager(appContext, photoCapture, repository)
+    ): FaceManager {
+        return FaceManager(appContext, photoCapture, repository)
     }
 
     @Singleton
@@ -64,9 +64,9 @@ object CameraModule {
     fun providesImageAnalyzer(
         @ApplicationContext appContext: Context,
         faceDetector: FaceDetector,
-        faceCaptureManager: FaceCaptureManager,
+        faceManager: FaceManager,
     ): ImageAnalyzer {
-        return ImageAnalyzer(appContext, faceDetector, faceCaptureManager)
+        return ImageAnalyzer(appContext, faceDetector, faceManager)
     }
 
     @Provides

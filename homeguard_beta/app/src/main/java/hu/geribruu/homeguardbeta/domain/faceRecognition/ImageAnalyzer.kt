@@ -25,7 +25,7 @@ import javax.inject.Inject
 class ImageAnalyzer @Inject constructor(
     private var context: Context,
     private var faceDetector: FaceDetector,
-    private val faceCaptureManager: FaceCaptureManager,
+    private val faceManager: FaceManager,
 ) : ImageAnalysis.Analyzer {
 
     var flipX = false // todo ey is fontos
