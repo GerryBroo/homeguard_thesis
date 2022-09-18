@@ -1,7 +1,10 @@
 package hu.geribruu.homeguardbeta.domain.faceRecognition
 
+import android.content.Context
 import hu.geribruu.homeguardbeta.data.face.disk.FaceDiskDataSource
 import hu.geribruu.homeguardbeta.domain.faceRecognition.model.RecognizedFace
+import hu.geribruu.homeguardbeta.domain.faceRecognition.model.SimilarityClassifier
+import hu.geribruu.homeguardbeta.domain.faceRecognition.util.insertToSP
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -9,11 +12,18 @@ import java.util.Locale
 import javax.inject.Inject
 
 class FaceCaptureManager @Inject constructor(
+    private var context: Context,
     private val photoCapture: PhotoCapture,
-    private val repository: FaceDiskDataSource,
+    private val faceDiskDataSource: FaceDiskDataSource,
 ) {
 
-    fun manageNewFace(name: String) {
+    fun manageNewFace(
+        registered: HashMap<String?, SimilarityClassifier.Recognition>,
+        name: String,
+    ) {
+
+        insertToSP(context, registered)
+
         val date = SimpleDateFormat(
             PhotoCapture.FILENAME_FORMAT,
             Locale.US
@@ -21,7 +31,7 @@ class FaceCaptureManager @Inject constructor(
         val url = photoCapture.takePhoto()
 
         GlobalScope.launch {
-            repository.insertFace(RecognizedFace(0, name, date, url))
+            faceDiskDataSource.insertFace(RecognizedFace(0, name, date, url))
         }
     }
 }

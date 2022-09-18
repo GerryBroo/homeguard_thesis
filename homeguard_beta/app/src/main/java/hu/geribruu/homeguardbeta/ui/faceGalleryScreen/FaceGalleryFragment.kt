@@ -1,5 +1,6 @@
 package hu.geribruu.homeguardbeta.ui.faceGalleryScreen
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +13,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentFaceGalleryBinding
 import hu.geribruu.homeguardbeta.domain.faceRecognition.model.RecognizedFace
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.deleteFromSP
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.AddNewFaceActivity
 import hu.geribruu.homeguardbeta.ui.faceGalleryScreen.adapter.FaceGalleryAdapter
+import kotlinx.android.synthetic.main.fragment_face_gallery.btnAddFace
 import kotlinx.android.synthetic.main.fragment_face_gallery.recyclerview_gallery
 import java.io.File
 
@@ -39,6 +42,10 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+        btnAddFace.setOnClickListener {
+            val intent = Intent(activity, AddNewFaceActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun setupRecyclerView() {

@@ -5,15 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import dagger.hilt.android.AndroidEntryPoint
-import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
 import hu.geribruu.homeguardbeta.domain.faceRecognition.CameraManager
 
@@ -29,26 +24,6 @@ class CameraPreviewFragment : Fragment() {
 
     private lateinit var cameraManager: CameraManager
     private var isLensFacingFront = true
-
-    private lateinit var facePreview: ImageView
-    private lateinit var recognationName: TextView
-    private lateinit var textAbovePreview: TextView
-    private lateinit var recognize: Button
-    private lateinit var cameraSwitch: Button
-    private lateinit var addFaceBtn: ImageButton
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentCameraPreviewBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        initFunction()
-
-        return root
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -66,49 +41,31 @@ class CameraPreviewFragment : Fragment() {
         }
     }
 
-    private fun initFunction() {
-        initUI()
-        startCamera()
-        controlCameraSelectCamera()
-        controlAddFace()
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        _binding = FragmentCameraPreviewBinding.inflate(inflater, container, false)
+        val root: View = binding.root
+
+        initFunction()
+
+        return root
     }
 
-    private fun initUI() {
-        facePreview = binding.imageView
-        recognationName = binding.tvRecognitionInfo
-        textAbovePreview = binding.textAbovePreview
-        addFaceBtn = binding.btnAddFace
-        addFaceBtn.visibility = View.INVISIBLE
-
-        facePreview.visibility = View.INVISIBLE
-        recognize = binding.button3
-        cameraSwitch = binding.btnFlipCamera
-        textAbovePreview.text = getString(R.string.camera_recognized_faces)
-
-        recognize.setOnClickListener { // TODO Add face delete and add to faceGallery
-            if (recognize.text.toString() == "Recognize") {
-                textAbovePreview.text = getString(R.string.camera_recognized_faces)
-                recognize.text = getString(R.string.camera_add_faces)
-                addFaceBtn.visibility = View.INVISIBLE
-                recognationName.visibility = View.VISIBLE
-                facePreview.visibility = View.INVISIBLE
-            } else {
-                textAbovePreview.text = getString(R.string.camera_recognized_faces)
-                recognize.text = getString(R.string.camera_recognize)
-                addFaceBtn.visibility = View.VISIBLE
-                recognationName.visibility = View.INVISIBLE
-                facePreview.visibility = View.VISIBLE
-            }
-        }
+    private fun initFunction() {
+        startCamera()
+        controlCameraSelectCamera()
     }
 
     private fun startCamera() {
         cameraManager = CameraManager(
             owner = (this as LifecycleOwner),
-            context = context!!,
-            viewPreview = binding.previewView,
-            recognationName = binding.tvRecognitionInfo,
-            facePreview = facePreview
+            context = requireContext(),
+            viewPreview = binding.previewViewCamera,
+            recognitionInfo = binding.tvRecognitionInfo,
+            facePreview = null
         )
         cameraManager.startCamera(onFrontCamera = true)
     }
@@ -122,14 +79,6 @@ class CameraPreviewFragment : Fragment() {
     private fun changeCamera(): Boolean {
         isLensFacingFront = !isLensFacingFront
         return isLensFacingFront
-    }
-
-    private fun controlAddFace() {
-        binding.btnAddFace.setOnClickListener { addFace() }
-    }
-
-    private fun addFace() {
-        cameraManager.addFace()
     }
 
     override fun onDestroy() {

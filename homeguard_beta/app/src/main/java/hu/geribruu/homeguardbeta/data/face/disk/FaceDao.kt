@@ -15,14 +15,14 @@ interface FaceDao {
     fun getFace(): Flow<List<RecognizedFace>>
 
     @Query("SELECT * FROM face WHERE id = :id")
-    suspend fun getFaceById(id: Int): RecognizedFace?
+    fun getFaceById(id: Int): RecognizedFace?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFace(face: RecognizedFace)
+    fun insertFace(face: RecognizedFace)
 
     @Delete
     suspend fun deleteFace(face: RecognizedFace)
 
     @Query("DELETE FROM face")
-    suspend fun deleteAll()
+    fun deleteAll()
 }
