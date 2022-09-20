@@ -62,15 +62,17 @@ class AddNewFaceActivity : AppCompatActivity() {
     }
 
     private fun addFace() {
-        when (cameraManager.isNewFaceAvailable()) {
-            is OkFace -> buildAlert()
-            is NoFace -> {
-                Toast.makeText(this, "No face detected!", Toast.LENGTH_SHORT).show()
-            }
-            is ExistingFace -> {
-                Toast.makeText(this, "This face is already existed", Toast.LENGTH_SHORT).show()
-            }
-        }
+//        cameraManager.isNewFaceAvailable()
+//        when (cameraManager.isNewFaceAvailable()) {
+//            is OkFace -> buildAlert()
+//            is NoFace -> {
+//                Toast.makeText(this, "No face detected!", Toast.LENGTH_SHORT).show()
+//            }
+//            is ExistingFace -> {
+//                Toast.makeText(this, "This face is already existed", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+        buildAlert()
     }
 
     private fun buildAlert() {

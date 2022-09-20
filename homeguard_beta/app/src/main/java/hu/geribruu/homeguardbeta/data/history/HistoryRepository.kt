@@ -22,11 +22,11 @@ class HistoryRepository @Inject constructor(
         }
     }
 
-    fun insertHistory(historyItem: RoomHistoryItem) {
+    suspend fun insertHistory(historyItem: RoomHistoryItem) {
         dao.insertHistoryItem(historyItem)
     }
 
-    fun deleteHistories() {
+    suspend fun deleteHistories() {
         dao.deleteHistory()
     }
 }

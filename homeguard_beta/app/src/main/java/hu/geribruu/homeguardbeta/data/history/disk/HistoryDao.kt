@@ -17,5 +17,5 @@ interface HistoryDao {
     fun insertHistoryItem(historyItem: RoomHistoryItem)
 
     @Query("DELETE FROM histories")
-    fun deleteHistory()
+    suspend fun deleteHistory()
 }

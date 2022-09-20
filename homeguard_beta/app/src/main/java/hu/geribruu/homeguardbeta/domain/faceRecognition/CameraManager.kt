@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
+import android.util.Log
 import android.util.Pair
 import android.util.Size
 import android.widget.ImageView
@@ -209,6 +210,7 @@ class CameraManager @Inject constructor(
     fun isNewFaceAvailable(): FaceState {
         return when (recognitionInfo.text.toString()) {
             "Unknown" -> OkFace
+            "" -> OkFace
             "No Face Detected!" -> NoFace
             else -> ExistingFace
         }
@@ -275,12 +277,13 @@ class CameraManager @Inject constructor(
                 if (distance_local < 1.0f) {
                     // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
                     recognitionInfo.text = name
-                    faceManager.manageFace(name)
                 } else {
                     recognitionInfo.text = "Unknown"
                 }
             }
         }
+
+        faceManager.manageFace(recognitionInfo.text.toString())
     }
 
     // Compare Faces by distance between face embeddings
