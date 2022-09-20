@@ -16,3 +16,5 @@
     * kitaláltam az arc mentési logikát:
         * Ha 15 mp-en belül leglaább 3 mp keresztül érzékeli úgyanazt az arcot akkor elmenti, mentés után 2 percig nem menti el úgyanazt az arcot
 
+* 2022.09.20.
+    * Arc mentési logika implementálása, működik újra indítani a számlálot még nem tudja, és nagyon csúnya a kód nekem nem tetszik, TODO átdolgozni
