@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
-import hu.geribruu.homeguardbeta.domain.faceRecognition.CameraManager
 
 @AndroidEntryPoint
 class CameraPreviewFragment : Fragment() {
@@ -21,8 +21,8 @@ class CameraPreviewFragment : Fragment() {
 
     private var _binding: FragmentCameraPreviewBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: CameraPreviewViewModel by viewModels()
 
-    private lateinit var cameraManager: CameraManager
     private var isLensFacingFront = true
 
     override fun onRequestPermissionsResult(
@@ -60,19 +60,18 @@ class CameraPreviewFragment : Fragment() {
     }
 
     private fun startCamera() {
-        cameraManager = CameraManager(
-            owner = (this as LifecycleOwner),
-            context = requireContext(),
-            viewPreview = binding.previewViewCamera,
-            recognitionInfo = binding.tvRecognitionInfo,
-            facePreview = null
+        viewModel.setCamera(
+            (this as LifecycleOwner),
+            requireContext(),
+            binding.previewViewCamera,
+            binding.tvRecognitionInfo,
         )
-        cameraManager.startCamera(onFrontCamera = true)
+        viewModel.startCamera()
     }
 
     private fun controlCameraSelectCamera() {
         binding.btnFlipCamera.setOnClickListener {
-            cameraManager.startCamera(onFrontCamera = changeCamera())
+            viewModel.startCamera(onFrontCamera = changeCamera())
         }
     }
 
@@ -83,6 +82,6 @@ class CameraPreviewFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraManager.stop()
+        viewModel.stopCamera()
     }
 }

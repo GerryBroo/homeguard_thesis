@@ -18,3 +18,10 @@
 
 * 2022.09.20.
     * Arc mentési logika implementálása, működik újra indítani a számlálot még nem tudja, és nagyon csúnya a kód nekem nem tetszik, TODO átdolgozni
+
+* 2022.09.22.
+    * Arc mentés logika működik rendeltetés szerűen, TODO kód átdolgozás szebbé
+    * History befejézse
+
+* 2022.09.25.
+    * Refactor: ViewModel beépítése a CameraPreview-ba

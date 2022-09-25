@@ -5,11 +5,14 @@ import android.os.Bundle
 import android.text.InputType
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.domain.faceRecognition.CameraManager
+import hu.geribruu.homeguardbeta.ui.cameraScreen.CameraPreviewViewModel
 import kotlinx.android.synthetic.main.activity_add_new_face.btnAddNewFace
 import kotlinx.android.synthetic.main.activity_add_new_face.btnFlipCamera
 import kotlinx.android.synthetic.main.activity_add_new_face.facePreview
@@ -19,8 +22,8 @@ import kotlinx.android.synthetic.main.activity_add_new_face.tvRecognitionInfo
 @AndroidEntryPoint
 class AddNewFaceActivity : AppCompatActivity() {
 
-    private lateinit var cameraManager: CameraManager
-    private var isLensFacingFront = false
+    private val viewModel: AddNewFaceViewModel by viewModels()
+    private var isLensFacingFront = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,19 +39,19 @@ class AddNewFaceActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        cameraManager = CameraManager(
-            owner = (this as LifecycleOwner),
-            context = this,
-            viewPreview = previewView,
-            recognitionInfo = tvRecognitionInfo,
-            facePreview = facePreview
+        viewModel.setCamera(
+            (this as LifecycleOwner),
+            this,
+            previewView,
+            tvRecognitionInfo,
+            facePreview
         )
-        cameraManager.startCamera(onFrontCamera = true)
+        viewModel.startCamera()
     }
 
     private fun controlCameraSelectCamera() {
         btnFlipCamera.setOnClickListener {
-            cameraManager.startCamera(onFrontCamera = changeCamera())
+            viewModel.startCamera(onFrontCamera = changeCamera())
         }
     }
 
@@ -62,17 +65,15 @@ class AddNewFaceActivity : AppCompatActivity() {
     }
 
     private fun addFace() {
-//        cameraManager.isNewFaceAvailable()
-//        when (cameraManager.isNewFaceAvailable()) {
-//            is OkFace -> buildAlert()
-//            is NoFace -> {
-//                Toast.makeText(this, "No face detected!", Toast.LENGTH_SHORT).show()
-//            }
-//            is ExistingFace -> {
-//                Toast.makeText(this, "This face is already existed", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-        buildAlert()
+        when (viewModel.isNewFaceAvailable()) {
+            is OkFace -> buildAlert()
+            is NoFace -> {
+                Toast.makeText(this, "No face detected!", Toast.LENGTH_SHORT).show()
+            }
+            is ExistingFace -> {
+                Toast.makeText(this, "This face is already existed", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun buildAlert() {
@@ -86,7 +87,7 @@ class AddNewFaceActivity : AppCompatActivity() {
         builder.setPositiveButton(
             "ADD"
         ) { _, _ ->
-            cameraManager.setNewFace(input.text.toString())
+            viewModel.setNewFace(input.text.toString())
             finish()
         }
         builder.setNegativeButton(
@@ -96,6 +97,11 @@ class AddNewFaceActivity : AppCompatActivity() {
             dialog.cancel()
         }
         builder.show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.stopCamera()
     }
 }
 

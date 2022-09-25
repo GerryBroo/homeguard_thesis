@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
-import android.util.Log
 import android.util.Pair
 import android.util.Size
 import android.widget.ImageView
@@ -46,7 +45,7 @@ class CameraManager @Inject constructor(
     private val context: Context,
     private val viewPreview: PreviewView,
     private val recognitionInfo: TextView,
-    private val facePreview: ImageView?,
+    private val facePreview: ImageView? = null,
 ) {
 
     private val faceManager =
