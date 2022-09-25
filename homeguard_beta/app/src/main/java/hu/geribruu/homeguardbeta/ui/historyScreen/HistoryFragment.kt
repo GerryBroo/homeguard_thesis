@@ -4,42 +4,60 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentHistoryBinding
+import hu.geribruu.homeguardbeta.ui.historyScreen.adapter.HistoryListAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HistoryFragment : Fragment() {
 
-    private lateinit var homeViewModel: HistoryViewModel
     private var _binding: FragmentHistoryBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
+
+    private val viewModel: HistoryViewModel by viewModels()
+
+    private lateinit var adapter: HistoryListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
-        homeViewModel =
-            ViewModelProvider(this).get(HistoryViewModel::class.java)
-
+    ): View {
         _binding = FragmentHistoryBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        return binding.root
+    }
 
-        val textView: TextView = binding.textHistory
-        homeViewModel.text.observe(
-            viewLifecycleOwner,
-            Observer {
-                textView.text = it
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupRecyclerView()
+        binding.btnDeleteHistory.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                viewModel.deleteHistory()
             }
-        )
-        return root
+        }
+    }
+
+    private fun setupRecyclerView() {
+        adapter = HistoryListAdapter()
+        binding.recyclerViewHistory.adapter = adapter
+        binding.recyclerViewHistory.layoutManager = LinearLayoutManager(context)
+
+        activity?.let { activity ->
+            viewModel.histories.observe(
+                activity,
+                Observer { histories ->
+                    histories.let { adapter.submitList(it) }
+                }
+            )
+        }
     }
 
     override fun onDestroyView() {

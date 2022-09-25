@@ -49,7 +49,7 @@ class CameraManager @Inject constructor(
     private val facePreview: ImageView?,
 ) {
 
-    val faceCaptureManager =
+    private val faceManager =
         EntryPointAccessors.fromApplication(context, HomaGuardApp.InitializerEntryPoint::class.java)
             .faceCaptureManager()
     private val imageCapture =
@@ -208,8 +208,9 @@ class CameraManager @Inject constructor(
     }
 
     fun isNewFaceAvailable(): FaceState {
-        return when(recognitionInfo.text.toString()) {
+        return when (recognitionInfo.text.toString()) {
             "Unknown" -> OkFace
+            "" -> OkFace
             "No Face Detected!" -> NoFace
             else -> ExistingFace
         }
@@ -224,7 +225,7 @@ class CameraManager @Inject constructor(
         result.extra = embeedings
         registered[name] = result
 
-        faceCaptureManager.manageNewFace(registered, name)
+        faceManager.manageNewFace(registered, name)
     }
 
     fun recognizeImage(bitmap: Bitmap) {
@@ -273,10 +274,16 @@ class CameraManager @Inject constructor(
                 val name = nearest[0]!!.first // get name and distance of closest matching face
                 distance_local = nearest[0]!!.second
 
-                if (distance_local < 1.0f) // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
-                    recognitionInfo.text = name else recognitionInfo.text = "Unknown"
+                if (distance_local < 1.0f) {
+                    // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
+                    recognitionInfo.text = name
+                } else {
+                    recognitionInfo.text = "Unknown"
+                }
             }
         }
+
+        faceManager.manageFace(recognitionInfo.text.toString())
     }
 
     // Compare Faces by distance between face embeddings

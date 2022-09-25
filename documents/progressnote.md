@@ -10,3 +10,11 @@
     * Kiszedtem a camera preview-ből az add new face opciót
     * Létrehoztam egy új activity-t, ami képes az arcok érzékelésére és az új arcok felvételére
     * Az új arc hozzáadásához feltételeket írtam, 2szer úgyanazt az arcot nem lehet felvenni, ha nincs arc akkor sem lehet felvenni. Csak ha a kijelzön UNKNOW szerepel
+
+* 2022.09.19.
+    * Létrehoztam a history elementek számára az adatbázist, illetve egy recycleview a history fragmentben
+    * kitaláltam az arc mentési logikát:
+        * Ha 15 mp-en belül leglaább 3 mp keresztül érzékeli úgyanazt az arcot akkor elmenti, mentés után 2 percig nem menti el úgyanazt az arcot
+
+* 2022.09.20.
+    * Arc mentési logika implementálása, működik újra indítani a számlálot még nem tudja, és nagyon csúnya a kód nekem nem tetszik, TODO átdolgozni

@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.facegallery_item.view.*
 import java.io.File
 
 class FaceGalleryAdapter(private val onClick: FaceClickListener) :
-    ListAdapter<RecognizedFace, FaceGalleryAdapter.GalleryViewHolder>(BIRDS_COMPARATOR) {
+    ListAdapter<RecognizedFace, FaceGalleryAdapter.GalleryViewHolder>(FACES_COMPARATOR) {
 
     private lateinit var current: RecognizedFace
 
@@ -30,8 +30,8 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
 
     class GalleryViewHolder(itemView: View, private val onClick: FaceClickListener) :
         RecyclerView.ViewHolder(itemView) {
-        private val tvFaceName: TextView = itemView.tv_name_gallery_item
-        private val tvFaceCaptureDate: TextView = itemView.tv_date_gallery_item
+        private val tvFaceName: TextView = itemView.tvHistoryName
+        private val tvFaceCaptureDate: TextView = itemView.tvHistoryCaptureDate
         private val imgFace: CircleImageView = itemView.img_gallery_item
 
         fun bind(face: RecognizedFace, position: Int) {
@@ -60,7 +60,7 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
     }
 
     companion object {
-        private val BIRDS_COMPARATOR = object : DiffUtil.ItemCallback<RecognizedFace>() {
+        private val FACES_COMPARATOR = object : DiffUtil.ItemCallback<RecognizedFace>() {
             override fun areItemsTheSame(oldItem: RecognizedFace, newItem: RecognizedFace): Boolean {
                 return oldItem === newItem
             }
