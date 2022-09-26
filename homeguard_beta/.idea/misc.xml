@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/drawable/ic_home.xml" value="0.187" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/drawable/ic_home_black_24dp.xml" value="0.285" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/activity_add_new_face.xml" value="0.4" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/activity_main.xml" value="0.4041666666666667" />

@@ -27,8 +27,7 @@ class CircularProgressView(
     private val ovalSpace = RectF()
 
     private val parentArcColor =
-        context?.resources?.getColor(R.color.purple_200, null) ?: Color.GRAY
-    private val fillArcColor = context?.resources?.getColor(R.color.purple_700, null) ?: Color.GREEN
+        context?.resources?.getColor(R.color.primary_light, null) ?: Color.GRAY
 
     private val parentArcPaint = Paint().apply {
         style = Paint.Style.STROKE
@@ -37,13 +36,7 @@ class CircularProgressView(
         strokeWidth = 40f
     }
 
-    private val fillArcPaint = Paint().apply {
-        style = Paint.Style.STROKE
-        isAntiAlias = true
-        color = fillArcColor
-        strokeWidth = 40f
-        strokeCap = Paint.Cap.ROUND
-    }
+    private lateinit var fillArcPaint: Paint
 
     override fun onDraw(canvas: Canvas?) {
         setSpace()
@@ -77,7 +70,20 @@ class CircularProgressView(
     private fun getCurrentPercentageToFill() =
         (ARC_FULL_ROTATION_DEGREE * (currentPercentage / PERCENTAGE_DIVIDER)).toFloat()
 
-    fun animateProgress() {
+    fun animateProgress(state: CircularProgressState) {
+        val fillArcColor = when (state) {
+            CircularProgressState.SAFETY -> context?.resources?.getColor(R.color.safety, null) ?: Color.GREEN
+            CircularProgressState.DANGER -> context?.resources?.getColor(R.color.danger, null) ?: Color.GREEN
+        }
+
+        fillArcPaint = Paint().apply {
+            style = Paint.Style.STROKE
+            isAntiAlias = true
+            color = fillArcColor
+            strokeWidth = 40f
+            strokeCap = Paint.Cap.ROUND
+        }
+
         val valuesHolder = PropertyValuesHolder.ofFloat("percentage", 0f, 100f)
         val animator = ValueAnimator().apply {
             setValues(valuesHolder)
@@ -89,5 +95,10 @@ class CircularProgressView(
             }
         }
         animator.start()
+    }
+
+    enum class CircularProgressState {
+        SAFETY,
+        DANGER
     }
 }
