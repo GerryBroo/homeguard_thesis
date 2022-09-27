@@ -1,16 +1,17 @@
 <resources>
-    <string name="app_name">HomeGuard Beta</string>
+    <string name="app_name">HomeGuard</string>
 
     <string name="title_home">Home</string>
     <string name="title_camera_preview">Camera Preview</string>
     <string name="title_face_gallery">Face Gallery</string>
     <string name="title_history">History</string>
     <string name="title_settings">Settings</string>
+    <string name="title_add_new_face">Add New Face</string>
 
     <string name="camera_recognized_faces">Recognized Face:</string>
     <string name="camera_add_faces">Add Face</string>
     <string name="camera_recognize">Recognize</string>
-    <string name="safe_uppercase">SAFE</string>
+    <string name="safety_uppercase">SAFETY</string>
     <string name="waitning_for_detection">Waitning for detection</string>
 
     <string name="no_face">No face detected!</string>
@@ -18,5 +19,7 @@
     <string name="history">History</string>
     <string name="default_timer">2000.20.20</string>
     <string name="delete_history">Delete History</string>
+    <string name="face">Face</string>
+    <string name="delete">Delete</string>
 
 </resources>

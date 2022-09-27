@@ -25,3 +25,6 @@
 
 * 2022.09.25.
     * Refactor: ViewModel beépítése a CameraPreview-ba
+
+* 2022.09.27.
+    * Desgin átalakítása, egységesítése

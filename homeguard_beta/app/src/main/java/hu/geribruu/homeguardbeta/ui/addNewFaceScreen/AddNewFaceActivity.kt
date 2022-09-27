@@ -29,6 +29,8 @@ class AddNewFaceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_new_face)
 
+        supportActionBar?.hide()
+
         initFunctions()
     }
 
