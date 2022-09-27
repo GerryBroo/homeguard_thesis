@@ -3,17 +3,22 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/drawable-v24/round_bg.xml" value="0.1765" />
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/drawable/ic_delete.xml" value="0.1" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/drawable/ic_home.xml" value="0.187" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/drawable/ic_home_black_24dp.xml" value="0.285" />
-        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/activity_add_new_face.xml" value="0.4" />
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/drawable/ic_person_add.xml" value="0.1765" />
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/activity_add_new_face.xml" value="0.16" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/activity_main.xml" value="0.4041666666666667" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/facegallery_item.xml" value="0.21920289855072464" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/fragment_camera_preview.xml" value="0.1" />
-        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/fragment_face_gallery.xml" value="0.4041666666666667" />
-        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/fragment_history.xml" value="0.4041666666666667" />
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/fragment_face_gallery.xml" value="0.264" />
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/fragment_history.xml" value="0.128" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/fragment_home.xml" value="0.4041666666666667" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/fragment_settings.xml" value="0.4041666666666667" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/item_history.xml" value="0.2212962962962963" />
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/row_facegallery_item.xml" value="0.25416666666666665" />
+        <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/layout/row_history_item.xml" value="0.25416666666666665" />
         <entry key="..\:/workspace/thesis/homeguard_thesis/homeguard_beta/app/src/main/res/menu/bottom_nav_menu.xml" value="0.4041666666666667" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.5911458333333334" />
         <entry key="app/src/main/res/layout/fragment_camera_preview.xml" value="0.5765625" />
