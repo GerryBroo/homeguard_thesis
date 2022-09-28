@@ -28,3 +28,4 @@
 
 * 2022.09.27.
     * Desgin átalakítása, egységesítése
+    * Object detection beépítése

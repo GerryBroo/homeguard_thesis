@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
+import android.util.Log
 import android.util.Pair
 import android.util.Size
 import android.widget.ImageView
@@ -63,6 +64,8 @@ class CameraManager @Inject constructor(
         .build()
 
     val faceDetector = FaceDetection.getClient(faceDetectorOption)
+
+    val objectDetector = CustomObjectDetector("bird_detection.tflite").objectDetector
 
     var flipX = false // todo ey is fontos
     var isModelQuantized = false // todo constans
@@ -146,43 +149,72 @@ class CameraManager @Inject constructor(
                 image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
             }
 
-            // Process acquired image to detect faces
-            val result = faceDetector!!.process(image)
-                .addOnSuccessListener { faces ->
-                    if (faces.size != 0) {
-                        val face = faces[0] // Get first face from detected faces
+            objectDetector.process(image!!)
+                .addOnSuccessListener { objects ->
 
-                        // mediaImage to Bitmap
-                        val frame_bmp = toBitmap(mediaImage)
-                        val rot = imageProxy.imageInfo.rotationDegrees
+                    for (detectedObject in objects) {
 
-                        // Adjust orientation of Face
-                        val frame_bmp1 =
-                            rotateBitmap(frame_bmp, rot, false, false)
-
-                        // Get bounding box of face
-                        val boundingBox = RectF(face.boundingBox)
-
-                        // Crop out bounding box from whole Bitmap(image)
-                        var cropped_face =
-                            getCropBitmapByCPU(frame_bmp1, boundingBox)
-                        if (flipX) cropped_face =
-                            rotateBitmap(cropped_face, 0, flipX, false)
-                        // Scale the acquired Face to 112*112 which is required input for model
-                        val scaled = getResizedBitmap(cropped_face, 112, 112)
-                        recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
-                    } else {
-                        recognitionInfo.text = "No Face Detected!"
+                        val objectName = detectedObject.labels.firstOrNull()?.text ?: "Undefined"
+                        Log.d("asd", "detetction: $objectName")
                     }
                 }
                 .addOnFailureListener {
-                    // Task failed with an exception
-                    // ...
+                    Log.v("ImageAnalyzer", "Error - ${it.message}")
                 }
                 .addOnCompleteListener {
-                    imageProxy.close() // v.important to acquire next frame for analysis
+                    imageProxy.close()
                 }
+
+//            // Process acquired image to detect faces
+//            faceDetector.process(image!!)
+//                .addOnSuccessListener { faces ->
+//                    if (faces.size != 0) {
+//                        val face = faces[0] // Get first face from detected faces
+//
+//                        // mediaImage to Bitmap
+//                        val frame_bmp = toBitmap(mediaImage)
+//                        val rot = imageProxy.imageInfo.rotationDegrees
+//
+//                        // Adjust orientation of Face
+//                        val frame_bmp1 =
+//                            rotateBitmap(frame_bmp, rot, false, false)
+//
+//                        // Get bounding box of face
+//                        val boundingBox = RectF(face.boundingBox)
+//
+//                        // Crop out bounding box from whole Bitmap(image)
+//                        var cropped_face =
+//                            getCropBitmapByCPU(frame_bmp1, boundingBox)
+//                        if (flipX) cropped_face =
+//                            rotateBitmap(cropped_face, 0, flipX, false)
+//                        // Scale the acquired Face to 112*112 which is required input for model
+//                        val scaled = getResizedBitmap(cropped_face, 112, 112)
+//                        recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
+//                    } else {
+//                        recognitionInfo.text = "No Face Detected!"
+//                    }
+//                }
+//                .addOnFailureListener {
+//                    // Task failed with an exception
+//                    // ...
+//                }
+//                .addOnCompleteListener {
+////                    imageProxy.close() // v.important to acquire next frame for analysis
+//                }
+
+//            imageProxy.close()
         }
+
+        val objectImageAnalysis = ImageAnalysis.Builder()
+            .setTargetResolution(Size(1280, 720))
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+
+        objectImageAnalysis.setAnalyzer(
+            ContextCompat.getMainExecutor(context),
+            ObjectImageAnalyzer()
+        )
+
         preview.setSurfaceProvider(previewView!!.surfaceProvider)
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(
@@ -261,7 +293,7 @@ class CameraManager @Inject constructor(
         embeedings =
             Array(1) { FloatArray(OUTPUT_SIZE) } // output of model will be stored in this variable
         outputMap[0] = embeedings
-        MainActivity.tfLite.runForMultipleInputsOutputs(inputArray, outputMap) // Run model
+        MainActivity.tfLiteFace.runForMultipleInputsOutputs(inputArray, outputMap) // Run model
         var distance_local = Float.MAX_VALUE
         val id = "0"
         val label = "?"
