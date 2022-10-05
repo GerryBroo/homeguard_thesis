@@ -23,5 +23,7 @@
     <string name="face">Face</string>
     <string name="delete">Delete</string>
     <string name="set_postman">Set postman</string>
+    <string name="choose_postman">Choose one new postman:</string>
+    <string name="current_postman">Current Postman</string>
 
 </resources>

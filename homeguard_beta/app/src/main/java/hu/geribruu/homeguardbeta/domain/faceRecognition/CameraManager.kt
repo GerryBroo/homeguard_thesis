@@ -16,6 +16,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.gms.tasks.Tasks
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
@@ -142,9 +143,8 @@ class CameraManager @Inject constructor(
                 e.printStackTrace()
             }
             var image: InputImage? = null
-            @SuppressLint("UnsafeExperimentalUsageError") val mediaImage =
+            @SuppressLint("UnsafeExperimentalUsageError") var mediaImage = imageProxy.image
                 // Camera Feed-->Analyzer-->ImageProxy-->mediaImage-->InputImage(needed for ML kit face detection)
-                imageProxy.image
             if (mediaImage != null) {
                 image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
             }
@@ -162,47 +162,54 @@ class CameraManager @Inject constructor(
                     Log.v("ImageAnalyzer", "Error - ${it.message}")
                 }
                 .addOnCompleteListener {
-                    imageProxy.close()
+
+                    mediaImage = imageProxy.image
+
+                    val planes = mediaImage!!.planes
+                    if (planes.size >= 3) {
+                        // Reset buffer position for each plane's buffer.
+                        for (plane in planes) {
+                            plane.buffer.rewind()
+                        }
+                    }
+
+                    // Process acquired image to detect faces
+                    faceDetector.process(image)
+                        .addOnSuccessListener { faces ->
+                            if (faces.size != 0) {
+                                val face = faces[0] // Get first face from detected faces
+
+                                // mediaImage to Bitmap
+                                val frame_bmp = toBitmap(mediaImage)
+                                val rot = imageProxy.imageInfo.rotationDegrees
+
+                                // Adjust orientation of Face
+                                val frame_bmp1 =
+                                    rotateBitmap(frame_bmp, rot, false, false)
+
+                                // Get bounding box of face
+                                val boundingBox = RectF(face.boundingBox)
+
+                                // Crop out bounding box from whole Bitmap(image)
+                                var cropped_face =
+                                    getCropBitmapByCPU(frame_bmp1, boundingBox)
+                                if (flipX) cropped_face =
+                                    rotateBitmap(cropped_face, 0, flipX, false)
+                                // Scale the acquired Face to 112*112 which is required input for model
+                                val scaled = getResizedBitmap(cropped_face, 112, 112)
+                                recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
+                            } else {
+                                recognitionInfo.text = "No Face Detected!"
+                            }
+                        }
+                        .addOnFailureListener {
+                            // Task failed with an exception
+                            // ...
+                        }
+                        .addOnCompleteListener {
+                            imageProxy.close() // v.important to acquire next frame for analysis
+                        }
                 }
-
-//            // Process acquired image to detect faces
-//            faceDetector.process(image!!)
-//                .addOnSuccessListener { faces ->
-//                    if (faces.size != 0) {
-//                        val face = faces[0] // Get first face from detected faces
-//
-//                        // mediaImage to Bitmap
-//                        val frame_bmp = toBitmap(mediaImage)
-//                        val rot = imageProxy.imageInfo.rotationDegrees
-//
-//                        // Adjust orientation of Face
-//                        val frame_bmp1 =
-//                            rotateBitmap(frame_bmp, rot, false, false)
-//
-//                        // Get bounding box of face
-//                        val boundingBox = RectF(face.boundingBox)
-//
-//                        // Crop out bounding box from whole Bitmap(image)
-//                        var cropped_face =
-//                            getCropBitmapByCPU(frame_bmp1, boundingBox)
-//                        if (flipX) cropped_face =
-//                            rotateBitmap(cropped_face, 0, flipX, false)
-//                        // Scale the acquired Face to 112*112 which is required input for model
-//                        val scaled = getResizedBitmap(cropped_face, 112, 112)
-//                        recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
-//                    } else {
-//                        recognitionInfo.text = "No Face Detected!"
-//                    }
-//                }
-//                .addOnFailureListener {
-//                    // Task failed with an exception
-//                    // ...
-//                }
-//                .addOnCompleteListener {
-////                    imageProxy.close() // v.important to acquire next frame for analysis
-//                }
-
-//            imageProxy.close()
         }
 
         val objectImageAnalysis = ImageAnalysis.Builder()

@@ -12,14 +12,17 @@ fun toBitmap(image: Image?): Bitmap {
     val out = ByteArrayOutputStream()
     yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 75, out)
     val imageBytes = out.toByteArray()
-    //System.out.println("bytes"+ Arrays.toString(imageBytes));
+    // System.out.println("bytes"+ Arrays.toString(imageBytes));
 
-    //System.out.println("FORMAT"+image.getFormat());
+    // System.out.println("FORMAT"+image.getFormat());
     return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 }
 
 fun rotateBitmap(
-    bitmap: Bitmap?, rotationDegrees: Int, flipX: Boolean, flipY: Boolean
+    bitmap: Bitmap?,
+    rotationDegrees: Int,
+    flipX: Boolean,
+    flipY: Boolean
 ): Bitmap {
     val matrix = Matrix()
 
@@ -79,7 +82,7 @@ fun getResizedBitmap(bm: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
     return resizedBitmap
 }
 
-//IMPORTANT. If conversion not done ,the toBitmap conversion does not work on some devices.
+// IMPORTANT. If conversion not done ,the toBitmap conversion does not work on some devices.
 private fun YUV_420_888toNV21(image: Image?): ByteArray {
     val width = image!!.width
     val height = image.height
