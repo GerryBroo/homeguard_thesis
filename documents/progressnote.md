@@ -29,3 +29,11 @@
 * 2022.09.27.
     * Desgin átalakítása, egységesítése
     * Object detection beépítése
+
+* 2022.09.30.
+    * Kukásautó model elkészítésének elkezdése: Képek gyűjtöttem az internetről és elkészítettem egy CVS Dastaset-et, azonban nem sikerült működésre bírjam a python scriptet, ami egy tflite modelt készítene. Mindig megakad egy pluginon, amit általában nem tudok feltelepíteni
+
+* 2022.10.05.
+    * Befejezte a multidetector-t teszteltem az első félévben elkészített madáretető madárfelismerő model-el
+    * tovább folytattam a kukásautó model készítését, de ismétetlen nem sikerült
+    * létrehoztam a beadandó dokumentumot és elkezdtem megtevezni és megírni a vázát
