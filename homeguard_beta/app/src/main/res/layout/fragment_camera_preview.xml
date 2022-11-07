@@ -52,4 +52,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/container" />
 
+    <TextView
+        android:id="@+id/tvFPS"
+        android:layout_width="164dp"
+        android:layout_height="wrap_content"
+        android:hint="FPS"
+        android:textAlignment="center"
+        android:textColor="@color/purple_500"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvRecognitionInfo" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

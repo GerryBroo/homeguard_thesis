@@ -126,6 +126,11 @@ class CameraManager @Inject constructor(
         }, ContextCompat.getMainExecutor(context!!))
     }
 
+    private var frameTimestamps = ArrayDeque<Long>(5)
+    var framesPerSecond: Double = -1.0
+        private set
+    private val frameRateWindow = 8
+
     @SuppressLint("UnsafeOptInUsageError")
     fun bindPreview(cameraProvider: ProcessCameraProvider) {
         val preview = Preview.Builder()
@@ -141,6 +146,20 @@ class CameraManager @Inject constructor(
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             }
+
+            // Keep track of frames analyzed
+            val currentTime = System.currentTimeMillis()
+            frameTimestamps.add(currentTime)
+
+            // Compute the FPS using a moving average
+            while (frameTimestamps.size >= frameRateWindow) frameTimestamps.removeFirst()
+            val timestampFirst = frameTimestamps.first() ?: currentTime
+            val timestampLast = frameTimestamps.last() ?: currentTime
+            framesPerSecond = 1.0 / (
+                (timestampLast - timestampFirst) /
+                    frameTimestamps.size.coerceAtLeast(1).toDouble()
+                ) * 1000.0
+
             var image: InputImage? = null
             @SuppressLint("UnsafeExperimentalUsageError") var mediaImage = imageProxy.image
             // Camera Feed-->Analyzer-->ImageProxy-->mediaImage-->InputImage(needed for ML kit face detection)
@@ -296,10 +315,11 @@ class CameraManager @Inject constructor(
         // imgData is input to our model
         val inputArray = arrayOf<Any>(imgData)
         val outputMap: MutableMap<Int, Any> = HashMap()
-        embeedings =
-            Array(1) { FloatArray(OUTPUT_SIZE) } // output of model will be stored in this variable
+        // output of model will be stored in this variable
+        embeedings = Array(1) { FloatArray(OUTPUT_SIZE) }
         outputMap[0] = embeedings
         MainActivity.tfLiteFace.runForMultipleInputsOutputs(inputArray, outputMap) // Run model
+
         var distance_local = Float.MAX_VALUE
         val id = "0"
         val label = "?"

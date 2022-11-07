@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
+import kotlinx.android.synthetic.main.fragment_camera_preview.previewViewCamera
 
 @AndroidEntryPoint
 class CameraPreviewFragment : Fragment() {
