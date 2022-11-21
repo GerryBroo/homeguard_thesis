@@ -18,7 +18,7 @@ class ObjectImageAnalyzer(
 
         val mediaImage = imageProxy.image
 
-        if(mediaImage != null) {
+        if (mediaImage != null) {
             val processImage = InputImage.fromMediaImage(mediaImage, rotationDegrees)
 
             birdObjectDetector.process(processImage)
@@ -34,7 +34,6 @@ class ObjectImageAnalyzer(
 //
 //                        cameraVM.insert(BirdDatabaseModel(0, name, date, url))
 
-                        Log.d("asd","detetction: $name")
                     }
                 }
                 .addOnFailureListener {

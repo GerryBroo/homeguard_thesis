@@ -85,6 +85,10 @@ class CameraManager @Inject constructor(
     private var lensFacing: Int = CameraSelector.LENS_FACING_FRONT
     private lateinit var cameraProvider: ProcessCameraProvider
 
+    fun observeChanges(observer: (String) -> Unit) {
+        observer.invoke(recognitionInfo.text.toString())
+    }
+
     fun stop() {
         cameraExecutor.shutdown()
     }
@@ -173,7 +177,6 @@ class CameraManager @Inject constructor(
                     for (detectedObject in objects) {
 
                         val objectName = detectedObject.labels.firstOrNull()?.text ?: "Undefined"
-                        Log.d("asd", "detetction: $objectName")
                     }
                 }
                 .addOnFailureListener {

@@ -9,9 +9,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import dagger.hilt.android.AndroidEntryPoint
 import hu.geribruu.homeguardbeta.databinding.FragmentCameraPreviewBinding
-import kotlinx.android.synthetic.main.fragment_camera_preview.previewViewCamera
 
 @AndroidEntryPoint
 class CameraPreviewFragment : Fragment() {
@@ -51,8 +51,24 @@ class CameraPreviewFragment : Fragment() {
         val root: View = binding.root
 
         initFunction()
+        setUpObservation()
 
         return root
+    }
+
+    private fun setUpObservation() {
+        viewModel.viewState.observe(
+            viewLifecycleOwner,
+            Observer { state ->
+                when (state) {
+                    is CameraPreviewViewModel.CameraViewState.CameraLoaded -> {
+                        binding.tvFPS.text = state.str
+                    }
+                    is CameraPreviewViewModel.CameraViewState.CameraLoadFailed -> {
+                    }
+                }
+            }
+        )
     }
 
     private fun initFunction() {
