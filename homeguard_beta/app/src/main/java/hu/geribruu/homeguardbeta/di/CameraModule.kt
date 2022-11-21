@@ -12,8 +12,6 @@ import hu.geribruu.homeguardbeta.data.face.disk.FaceDiskDataSource
 import hu.geribruu.homeguardbeta.data.history.HistoryRepository
 import hu.geribruu.homeguardbeta.domain.faceRecognition.CustomFaceDetector
 import hu.geribruu.homeguardbeta.domain.faceRecognition.FaceManager
-import hu.geribruu.homeguardbeta.domain.faceRecognition.ImageAnalyzer
-import hu.geribruu.homeguardbeta.domain.faceRecognition.ImageManager
 import hu.geribruu.homeguardbeta.domain.faceRecognition.PhotoCapture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -59,21 +57,5 @@ object CameraModule {
     @Provides
     fun providesFaceDetector(): FaceDetector {
         return CustomFaceDetector().faceDetector
-    }
-
-    @Singleton
-    @Provides
-    fun providesImageAnalyzer(
-        @ApplicationContext appContext: Context,
-        faceDetector: FaceDetector,
-        faceManager: FaceManager,
-    ): ImageAnalyzer {
-        return ImageAnalyzer(appContext, faceDetector, faceManager)
-    }
-
-    @Provides
-    @Singleton
-    fun provideImageManager(imageAnalyzer: ImageAnalyzer): ImageManager {
-        return ImageManager(imageAnalyzer)
     }
 }

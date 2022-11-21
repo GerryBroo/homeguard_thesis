@@ -1,4 +1,4 @@
-package hu.geribruu.homeguardbeta.ui.settingsScreen
+package hu.geribruu.homeguardbeta.ui.postmanScreen
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,17 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.Navigation
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
-import hu.geribruu.homeguardbeta.R
-import hu.geribruu.homeguardbeta.databinding.FragmentSettingsBinding
+import hu.geribruu.homeguardbeta.databinding.FragmentPostmanBinding
 
 @AndroidEntryPoint
-class SettingsFragment : Fragment() {
+class PostmanFragment : Fragment() {
 
-    private val settingsViewModel: SettingsViewModel by viewModels()
-    private var _binding: FragmentSettingsBinding? = null
+    private val viewModel: PostmanViewModel by viewModels()
+    private var _binding: FragmentPostmanBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -24,20 +22,15 @@ class SettingsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        _binding = FragmentPostmanBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val navBar =
             requireActivity().findViewById<BottomNavigationView>(hu.geribruu.homeguardbeta.R.id.nav_view)
-        navBar.visibility = View.VISIBLE
-
-        binding.btnNavPostmanFragment.setOnClickListener {
-            view?.let { view ->
-                Navigation.findNavController(view).navigate(R.id.navigation_postman)
-            }
-        }
-
-        return binding.root
+        navBar.visibility = View.GONE
     }
 
     override fun onDestroyView() {

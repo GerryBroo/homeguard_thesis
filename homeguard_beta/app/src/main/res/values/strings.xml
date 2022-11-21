@@ -7,6 +7,7 @@
     <string name="title_history">History</string>
     <string name="title_settings">Settings</string>
     <string name="title_add_new_face">Add New Face</string>
+    <string name="title_postman">Set Postman</string>
 
     <string name="camera_recognized_faces">Recognized Face:</string>
     <string name="camera_add_faces">Add Face</string>
@@ -21,5 +22,8 @@
     <string name="delete_history">Delete History</string>
     <string name="face">Face</string>
     <string name="delete">Delete</string>
+    <string name="set_postman">Set postman</string>
+    <string name="choose_postman">Choose one new postman:</string>
+    <string name="current_postman">Current Postman</string>
 
 </resources>
