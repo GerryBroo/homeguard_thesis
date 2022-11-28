@@ -10,15 +10,14 @@ import dagger.hilt.components.SingletonComponent
 import hu.geribruu.homeguardbeta.data.face.disk.FaceDao
 import hu.geribruu.homeguardbeta.data.face.disk.FaceDatabase
 import hu.geribruu.homeguardbeta.data.face.disk.FaceDiskDataSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
+import hu.geribruu.homeguardbeta.data.history.HistoryRepository
+import hu.geribruu.homeguardbeta.data.history.disk.HistoryDao
+import hu.geribruu.homeguardbeta.data.history.disk.HistoryRoomDatabase
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
-    private val applicationScope = CoroutineScope(SupervisorJob())
 
     @Singleton
     @Provides
@@ -37,5 +36,24 @@ object DatabaseModule {
     @Provides
     fun provideFaceDiskDataSource(faceDao: FaceDao): FaceDiskDataSource {
         return FaceDiskDataSource(faceDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideHistoryRoomDatabase(@ApplicationContext appContext: Context): HistoryRoomDatabase {
+        return Room.databaseBuilder(
+            appContext,
+            HistoryRoomDatabase::class.java,
+            "hitories"
+        ).build()
+    }
+
+    @Provides
+    fun provideHistoryDao(database: HistoryRoomDatabase): HistoryDao = database.historyDao()
+
+    @Singleton
+    @Provides
+    fun provideHistoryRepository(historyDao: HistoryDao): HistoryRepository {
+        return HistoryRepository(historyDao)
     }
 }

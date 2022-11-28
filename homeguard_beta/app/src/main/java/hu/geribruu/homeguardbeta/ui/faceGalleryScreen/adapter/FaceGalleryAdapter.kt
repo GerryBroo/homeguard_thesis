@@ -11,11 +11,14 @@ import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import hu.geribruu.homeguardbeta.R
 import hu.geribruu.homeguardbeta.domain.faceRecognition.model.RecognizedFace
-import kotlinx.android.synthetic.main.facegallery_item.view.*
+import kotlinx.android.synthetic.main.row_facegallery_item.view.btnDelete
+import kotlinx.android.synthetic.main.row_facegallery_item.view.imgGalleryItem
+import kotlinx.android.synthetic.main.row_facegallery_item.view.tvGalleryCaptureDate
+import kotlinx.android.synthetic.main.row_facegallery_item.view.tvGalleryName
 import java.io.File
 
 class FaceGalleryAdapter(private val onClick: FaceClickListener) :
-    ListAdapter<RecognizedFace, FaceGalleryAdapter.GalleryViewHolder>(BIRDS_COMPARATOR) {
+    ListAdapter<RecognizedFace, FaceGalleryAdapter.GalleryViewHolder>(FACES_COMPARATOR) {
 
     private lateinit var current: RecognizedFace
 
@@ -30,9 +33,9 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
 
     class GalleryViewHolder(itemView: View, private val onClick: FaceClickListener) :
         RecyclerView.ViewHolder(itemView) {
-        private val tvFaceName: TextView = itemView.tv_name_gallery_item
-        private val tvFaceCaptureDate: TextView = itemView.tv_date_gallery_item
-        private val imgFace: CircleImageView = itemView.img_gallery_item
+        private val tvFaceName: TextView = itemView.tvGalleryName
+        private val tvFaceCaptureDate: TextView = itemView.tvGalleryCaptureDate
+        private val imgFace: CircleImageView = itemView.imgGalleryItem
 
         fun bind(face: RecognizedFace, position: Int) {
             tvFaceName.text = face.name
@@ -45,7 +48,7 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
                 onClick.onClick(face.id)
             }
 
-            itemView.btn_delete.setOnClickListener {
+            itemView.btnDelete.setOnClickListener {
                 onClick.onDelete(face)
             }
         }
@@ -53,19 +56,25 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
         companion object {
             fun create(parent: ViewGroup, onClick: FaceClickListener): GalleryViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.facegallery_item, parent, false)
+                    .inflate(R.layout.row_facegallery_item, parent, false)
                 return GalleryViewHolder(view, onClick)
             }
         }
     }
 
     companion object {
-        private val BIRDS_COMPARATOR = object : DiffUtil.ItemCallback<RecognizedFace>() {
-            override fun areItemsTheSame(oldItem: RecognizedFace, newItem: RecognizedFace): Boolean {
+        private val FACES_COMPARATOR = object : DiffUtil.ItemCallback<RecognizedFace>() {
+            override fun areItemsTheSame(
+                oldItem: RecognizedFace,
+                newItem: RecognizedFace,
+            ): Boolean {
                 return oldItem === newItem
             }
 
-            override fun areContentsTheSame(oldItem: RecognizedFace, newItem: RecognizedFace): Boolean {
+            override fun areContentsTheSame(
+                oldItem: RecognizedFace,
+                newItem: RecognizedFace,
+            ): Boolean {
                 return oldItem.name == newItem.name
             }
         }

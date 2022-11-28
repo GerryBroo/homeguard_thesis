@@ -1,14 +1,12 @@
 package hu.geribruu.homeguardbeta.domain.faceRecognition
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
-import android.text.InputType
+import android.util.Log
 import android.util.Pair
 import android.util.Size
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.camera.core.CameraSelector
@@ -27,11 +25,14 @@ import hu.geribruu.homeguardbeta.HomaGuardApp
 import hu.geribruu.homeguardbeta.domain.faceRecognition.model.SimilarityClassifier
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.getCropBitmapByCPU
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.getResizedBitmap
-import hu.geribruu.homeguardbeta.domain.faceRecognition.util.insertToSP
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.readFromSP
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.rotateBitmap
 import hu.geribruu.homeguardbeta.domain.faceRecognition.util.toBitmap
 import hu.geribruu.homeguardbeta.ui.MainActivity
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.ExistingFace
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.FaceState
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.NoFace
+import hu.geribruu.homeguardbeta.ui.addNewFaceScreen.OkFace
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.ExecutionException
@@ -44,11 +45,11 @@ class CameraManager @Inject constructor(
     private val owner: LifecycleOwner,
     private val context: Context,
     private val viewPreview: PreviewView,
-    private val recognationName: TextView,
-    private val facePreview: ImageView,
+    private val recognitionInfo: TextView,
+    private val facePreview: ImageView? = null,
 ) {
 
-    val faceCaptureManager =
+    private val faceManager =
         EntryPointAccessors.fromApplication(context, HomaGuardApp.InitializerEntryPoint::class.java)
             .faceCaptureManager()
     private val imageCapture =
@@ -64,8 +65,9 @@ class CameraManager @Inject constructor(
 
     val faceDetector = FaceDetection.getClient(faceDetectorOption)
 
+    val objectDetector = CustomObjectDetector("bird_detection.tflite").objectDetector
+
     var flipX = false // todo ey is fontos
-    var start = true // todo kell
     var isModelQuantized = false // todo constans
     lateinit var intValues: IntArray // todo nem v'gom miert lateniat
     lateinit var embeedings: Array<FloatArray> // todo szinten nem vagom miert lateinit
@@ -76,12 +78,16 @@ class CameraManager @Inject constructor(
     var IMAGE_STD = 128.0f
     var OUTPUT_SIZE = 192 // Output size of model
 
-    private var registered: HashMap<String?, SimilarityClassifier.Recognition> =
+    var registered: HashMap<String?, SimilarityClassifier.Recognition> =
         HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
 
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var lensFacing: Int = CameraSelector.LENS_FACING_FRONT
     private lateinit var cameraProvider: ProcessCameraProvider
+
+    fun observeChanges(observer: (String) -> Unit) {
+        observer.invoke(recognitionInfo.text.toString())
+    }
 
     fun stop() {
         cameraExecutor.shutdown()
@@ -124,6 +130,11 @@ class CameraManager @Inject constructor(
         }, ContextCompat.getMainExecutor(context!!))
     }
 
+    private var frameTimestamps = ArrayDeque<Long>(5)
+    var framesPerSecond: Double = -1.0
+        private set
+    private val frameRateWindow = 8
+
     @SuppressLint("UnsafeOptInUsageError")
     fun bindPreview(cameraProvider: ProcessCameraProvider) {
         val preview = Preview.Builder()
@@ -139,53 +150,99 @@ class CameraManager @Inject constructor(
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             }
+
+            // Keep track of frames analyzed
+            val currentTime = System.currentTimeMillis()
+            frameTimestamps.add(currentTime)
+
+            // Compute the FPS using a moving average
+            while (frameTimestamps.size >= frameRateWindow) frameTimestamps.removeFirst()
+            val timestampFirst = frameTimestamps.first() ?: currentTime
+            val timestampLast = frameTimestamps.last() ?: currentTime
+            framesPerSecond = 1.0 / (
+                (timestampLast - timestampFirst) /
+                    frameTimestamps.size.coerceAtLeast(1).toDouble()
+                ) * 1000.0
+
             var image: InputImage? = null
-            @SuppressLint("UnsafeExperimentalUsageError") val mediaImage =
-                // Camera Feed-->Analyzer-->ImageProxy-->mediaImage-->InputImage(needed for ML kit face detection)
-                imageProxy.image
+            @SuppressLint("UnsafeExperimentalUsageError") var mediaImage = imageProxy.image
+            // Camera Feed-->Analyzer-->ImageProxy-->mediaImage-->InputImage(needed for ML kit face detection)
             if (mediaImage != null) {
                 image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
             }
 
-            // Process acquired image to detect faces
-            val result = faceDetector!!.process(image)
-                .addOnSuccessListener { faces ->
-                    if (faces.size != 0) {
-                        val face = faces[0] // Get first face from detected faces
+            objectDetector.process(image!!)
+                .addOnSuccessListener { objects ->
 
-                        // mediaImage to Bitmap
-                        val frame_bmp = toBitmap(mediaImage)
-                        val rot = imageProxy.imageInfo.rotationDegrees
+                    for (detectedObject in objects) {
 
-                        // Adjust orientation of Face
-                        val frame_bmp1 =
-                            rotateBitmap(frame_bmp, rot, false, false)
-
-                        // Get bounding box of face
-                        val boundingBox = RectF(face.boundingBox)
-
-                        // Crop out bounding box from whole Bitmap(image)
-                        var cropped_face =
-                            getCropBitmapByCPU(frame_bmp1, boundingBox)
-                        if (flipX) cropped_face =
-                            rotateBitmap(cropped_face, 0, flipX, false)
-                        // Scale the acquired Face to 112*112 which is required input for model
-                        val scaled = getResizedBitmap(cropped_face, 112, 112)
-                        if (start) recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
-                    } else {
-                        if (registered.isEmpty()) recognationName.text =
-                            "Add Face" else recognationName.text =
-                            "No Face Detected!"
+                        val objectName = detectedObject.labels.firstOrNull()?.text ?: "Undefined"
                     }
                 }
                 .addOnFailureListener {
-                    // Task failed with an exception
-                    // ...
+                    Log.v("ImageAnalyzer", "Error - ${it.message}")
                 }
                 .addOnCompleteListener {
-                    imageProxy.close() // v.important to acquire next frame for analysis
+
+                    mediaImage = imageProxy.image
+
+                    val planes = mediaImage!!.planes
+                    if (planes.size >= 3) {
+                        // Reset buffer position for each plane's buffer.
+                        for (plane in planes) {
+                            plane.buffer.rewind()
+                        }
+                    }
+
+                    // Process acquired image to detect faces
+                    faceDetector.process(image)
+                        .addOnSuccessListener { faces ->
+                            if (faces.size != 0) {
+                                val face = faces[0] // Get first face from detected faces
+
+                                // mediaImage to Bitmap
+                                val frame_bmp = toBitmap(mediaImage)
+                                val rot = imageProxy.imageInfo.rotationDegrees
+
+                                // Adjust orientation of Face
+                                val frame_bmp1 =
+                                    rotateBitmap(frame_bmp, rot, false, false)
+
+                                // Get bounding box of face
+                                val boundingBox = RectF(face.boundingBox)
+
+                                // Crop out bounding box from whole Bitmap(image)
+                                var cropped_face =
+                                    getCropBitmapByCPU(frame_bmp1, boundingBox)
+                                if (flipX) cropped_face =
+                                    rotateBitmap(cropped_face, 0, flipX, false)
+                                // Scale the acquired Face to 112*112 which is required input for model
+                                val scaled = getResizedBitmap(cropped_face, 112, 112)
+                                recognizeImage(scaled) // Send scaled bitmap to create face embeddings.
+                            } else {
+                                recognitionInfo.text = "No Face Detected!"
+                            }
+                        }
+                        .addOnFailureListener {
+                            // Task failed with an exception
+                            // ...
+                        }
+                        .addOnCompleteListener {
+                            imageProxy.close() // v.important to acquire next frame for analysis
+                        }
                 }
         }
+
+        val objectImageAnalysis = ImageAnalysis.Builder()
+            .setTargetResolution(Size(1280, 720))
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+
+        objectImageAnalysis.setAnalyzer(
+            ContextCompat.getMainExecutor(context),
+            ObjectImageAnalyzer()
+        )
+
         preview.setSurfaceProvider(previewView!!.surfaceProvider)
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(
@@ -209,51 +266,31 @@ class CameraManager @Inject constructor(
             .build()
     }
 
-    fun addFace() {
-
-        run {
-            start = false
-            val builder =
-                AlertDialog.Builder(context!!)
-            builder.setTitle("Enter Name")
-
-            // Set up the input
-            val input = EditText(context)
-            input.inputType = InputType.TYPE_CLASS_TEXT
-            builder.setView(input)
-
-            // Set up the buttons
-            builder.setPositiveButton(
-                "ADD"
-            ) { _, _ -> // Toast.makeText(context, input.getText().toString(), Toast.LENGTH_SHORT).show();
-
-                // Create and Initialize new object with Face embeddings and Name.
-                val result = SimilarityClassifier.Recognition(
-                    "0", "", -1f
-                )
-                val name = input.text.toString()
-
-                result.extra = embeedings
-                registered[name] = result
-                start = true
-
-                faceCaptureManager.manageNewFace(name)
-                insertToSP(context!!, registered) // mode: 0:save all, 1:clear all, 2:update all
-            }
-            builder.setNegativeButton(
-                "Cancel"
-            ) { dialog, _ ->
-                start = true
-                dialog.cancel()
-            }
-            builder.show()
+    fun isNewFaceAvailable(): FaceState {
+        return when (recognitionInfo.text.toString()) {
+            "Unknown" -> OkFace
+            "" -> OkFace
+            "No Face Detected!" -> NoFace
+            else -> ExistingFace
         }
+    }
+
+    fun setNewFace(name: String) {
+
+        val result = SimilarityClassifier.Recognition(
+            "0", "", -1f
+        )
+
+        result.extra = embeedings
+        registered[name] = result
+
+        faceManager.manageNewFace(registered, name)
     }
 
     fun recognizeImage(bitmap: Bitmap) {
 
         // set Face to Preview
-        facePreview.setImageBitmap(bitmap)
+        facePreview?.setImageBitmap(bitmap)
 
         // Create ByteBuffer to store normalized image
         val imgData = ByteBuffer.allocateDirect(1 * inputSize * inputSize * 3 * 4)
@@ -281,10 +318,11 @@ class CameraManager @Inject constructor(
         // imgData is input to our model
         val inputArray = arrayOf<Any>(imgData)
         val outputMap: MutableMap<Int, Any> = HashMap()
-        embeedings =
-            Array(1) { FloatArray(OUTPUT_SIZE) } // output of model will be stored in this variable
+        // output of model will be stored in this variable
+        embeedings = Array(1) { FloatArray(OUTPUT_SIZE) }
         outputMap[0] = embeedings
-        MainActivity.tfLite.runForMultipleInputsOutputs(inputArray, outputMap) // Run model
+        MainActivity.tfLiteFace.runForMultipleInputsOutputs(inputArray, outputMap) // Run model
+
         var distance_local = Float.MAX_VALUE
         val id = "0"
         val label = "?"
@@ -296,10 +334,16 @@ class CameraManager @Inject constructor(
                 val name = nearest[0]!!.first // get name and distance of closest matching face
                 distance_local = nearest[0]!!.second
 
-                if (distance_local < 1.0f) // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
-                    recognationName.text = name else recognationName.text = "Unknown"
+                if (distance_local < 1.0f) {
+                    // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
+                    recognitionInfo.text = name
+                } else {
+                    recognitionInfo.text = "Unknown"
+                }
             }
         }
+
+        faceManager.manageFace(recognitionInfo.text.toString())
     }
 
     // Compare Faces by distance between face embeddings

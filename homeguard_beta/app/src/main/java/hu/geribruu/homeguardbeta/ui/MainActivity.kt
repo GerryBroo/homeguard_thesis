@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     companion object LoadFile {
-        lateinit var tfLite: Interpreter
+        lateinit var tfLiteFace: Interpreter
         lateinit var outputFileUri: String
     }
 
@@ -41,15 +41,22 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_camera_preview, R.id.navigation_home, R.id.navigation_face_gallery
+                R.id.navigation_camera_preview,
+                R.id.navigation_home,
+                R.id.navigation_face_gallery,
+                R.id.navigation_history,
+                R.id.navigation_settings,
+                R.id.navigation_postman
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        supportActionBar?.hide()
+
         // Load model
         try {
-            tfLite = Interpreter(loadModelFile(this@MainActivity, "mobile_face_net.tflite"))
+            tfLiteFace = Interpreter(loadModelFile(this@MainActivity, "mobile_face_net.tflite"))
         } catch (e: IOException) {
             e.printStackTrace()
         }
