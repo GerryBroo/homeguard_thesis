@@ -13,6 +13,9 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import hu.geri.homeguard.domain.analyzer.CustomAnalyzer
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.java.KoinJavaComponent.inject
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -20,11 +23,13 @@ class CameraManager(
     private val owner: LifecycleOwner,
     private val context: Context,
     private val viewPreview: PreviewView,
-) {
+) : KoinComponent {
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var lensFacing: Int = LENS_FACING_FRONT
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
+
+    private val customAnalyzer: CustomAnalyzer by inject()
 
     fun startCamera(onFrontCamera: Boolean?) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
@@ -42,9 +47,8 @@ class CameraManager(
             .build()
         imageAnalysis.setAnalyzer(
             Executors.newSingleThreadExecutor(),
-            CustomAnalyzer()
+            customAnalyzer
         )
-
 
         cameraProvider?.let { cameraProvider ->
             val cameraSelector = getCameraSelector()

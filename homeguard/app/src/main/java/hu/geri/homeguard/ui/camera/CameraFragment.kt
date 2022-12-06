@@ -10,14 +10,16 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import hu.geri.homeguard.databinding.FragmentCameraBinding
 import hu.geri.homeguard.domain.camera.CameraManager
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class CameraFragment : Fragment() {
 
     private var _binding: FragmentCameraBinding? = null
     private val binding get() = _binding!!
+
+    private val cameraViewModel: CameraViewModel by viewModel()
 
     private lateinit var cameraManager: CameraManager
     private var changeCamera = false
@@ -27,8 +29,6 @@ class CameraFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        ViewModelProvider(this)[CameraViewModel::class.java]
-
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
 
         initFunctions()

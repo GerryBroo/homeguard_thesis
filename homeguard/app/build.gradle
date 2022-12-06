@@ -68,4 +68,9 @@ dependencies {
     implementation "org.tensorflow:tensorflow-lite-task-vision:${tensorflow_lite_version}"
     implementation "org.tensorflow:tensorflow-lite-gpu-delegate-plugin:${tensorflow_lite_version}"
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.9.0'
+
+    // KOIN
+    def koin_version = "3.3.0"
+    implementation "io.insert-koin:koin-android:${koin_version}"
+    implementation "io.insert-koin:koin-androidx-workmanager:${koin_version}"
 }
