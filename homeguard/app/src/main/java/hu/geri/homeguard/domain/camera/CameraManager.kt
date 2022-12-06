@@ -3,21 +3,23 @@ package hu.geri.homeguard.domain.camera
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Size
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import hu.geri.homeguard.domain.analyzer.CustomAnalyzer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class CameraManager(
     private val owner: LifecycleOwner,
     private val context: Context,
-    private val viewPreview: PreviewView
+    private val viewPreview: PreviewView,
 ) {
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var lensFacing: Int = LENS_FACING_FRONT
@@ -34,6 +36,16 @@ class CameraManager(
     }
 
     private fun bindCameraUseCases() {
+        val imageAnalysis = ImageAnalysis.Builder()
+            .setTargetResolution(Size(640, 480))
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+        imageAnalysis.setAnalyzer(
+            Executors.newSingleThreadExecutor(),
+            CustomAnalyzer()
+        )
+
+
         cameraProvider?.let { cameraProvider ->
             val cameraSelector = getCameraSelector()
             val previewView = getPreviewUseCase()
@@ -42,7 +54,8 @@ class CameraManager(
                 camera = cameraProvider.bindToLifecycle(
                     owner,
                     cameraSelector,
-                    previewView
+                    previewView,
+                    imageAnalysis
                 )
 
                 previewView.setSurfaceProvider(viewPreview.surfaceProvider)
@@ -78,6 +91,6 @@ class CameraManager(
 
     companion object {
         const val LENS_FACING_FRONT = CameraSelector.LENS_FACING_FRONT
-        const val LENS_FACING_BACK= CameraSelector.LENS_FACING_BACK
+        const val LENS_FACING_BACK = CameraSelector.LENS_FACING_BACK
     }
 }

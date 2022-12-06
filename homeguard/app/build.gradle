@@ -45,6 +45,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
+    implementation 'com.google.mlkit:common:18.1.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
@@ -57,4 +58,14 @@ dependencies {
     implementation "androidx.camera:camera-video:${camerax_version}"
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
+
+    // MLKIT
+    def object_detection_version = "17.0.0"
+    implementation "com.google.mlkit:object-detection-custom:${object_detection_version}"
+
+    // TFLITE
+    def tensorflow_lite_version = "0.4.0"
+    implementation "org.tensorflow:tensorflow-lite-task-vision:${tensorflow_lite_version}"
+    implementation "org.tensorflow:tensorflow-lite-gpu-delegate-plugin:${tensorflow_lite_version}"
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.9.0'
 }

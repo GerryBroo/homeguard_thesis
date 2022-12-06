@@ -1,10 +1,14 @@
 package hu.geri.homeguard.ui.camera
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import hu.geri.homeguard.databinding.FragmentCameraBinding
@@ -16,38 +20,79 @@ class CameraFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var cameraManager: CameraManager
+    private var changeCamera = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val cameraViewModel =
-            ViewModelProvider(this).get(CameraViewModel::class.java)
+        ViewModelProvider(this)[CameraViewModel::class.java]
 
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-        return root
+
+        initFunctions()
+
+        return binding.root
     }
 
-    private fun initFunction() {
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>,
+        grantResults: IntArray,
+    ) {
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                Toast.makeText(context, "camera permission granted", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(requireContext(),
+                    "Permissions not granted by the user.",
+                    Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun initFunctions() {
         startCamera()
         controlCameraSelectCamera()
-        close()
     }
 
     private fun startCamera() {
         cameraManager = CameraManager(
             owner = viewLifecycleOwner,
             context = requireContext(),
-            viewPreview = binding.pvViewCamera
+            viewPreview = binding.previewCamera
         )
         cameraManager.startCamera(onFrontCamera = false)
+    }
+
+    private fun controlCameraSelectCamera() {
+        changeCamera = !changeCamera
+        binding.btnFlipCamera.setOnClickListener {
+            cameraManager.startCamera(onFrontCamera = changeCamera)
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
         cameraManager.stop()
+    }
+
+    companion object {
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS =
+            mutableListOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
+            ).apply {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }.toTypedArray()
     }
 }
