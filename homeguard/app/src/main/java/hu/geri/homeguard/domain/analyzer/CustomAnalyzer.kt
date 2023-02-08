@@ -6,10 +6,14 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
 import hu.geri.homeguard.domain.analyzer.util.customObjectDetector
+import kotlinx.coroutines.flow.MutableStateFlow
 
-class CustomAnalyzer: ImageAnalysis.Analyzer {
+class CustomAnalyzer(
+) : ImageAnalysis.Analyzer {
 
-    private val objectDetector = customObjectDetector("model.tflite")
+    private val objectDetector = customObjectDetector("bird_detection.tflite")
+
+    val recognizedObjectStateFlow = MutableStateFlow("Undefined")
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -22,8 +26,8 @@ class CustomAnalyzer: ImageAnalysis.Analyzer {
             objectDetector.process(processImage)
                 .addOnSuccessListener { objects ->
                     for (detectedObject in objects) {
-                        val name = detectedObject.labels.firstOrNull()?.text ?: "Undefined"
-                        Log.d("ASD", name)
+                        recognizedObjectStateFlow.value =
+                            detectedObject.labels.firstOrNull()?.text ?: "Undefined"
                     }
                 }
                 .addOnFailureListener {

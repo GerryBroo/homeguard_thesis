@@ -32,28 +32,9 @@ class CameraFragment : Fragment() {
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
 
         initFunctions()
+        setupView()
 
         return binding.root
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray,
-    ) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                Toast.makeText(context, "camera permission granted", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(requireContext(),
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun initFunctions() {
@@ -77,10 +58,38 @@ class CameraFragment : Fragment() {
         }
     }
 
+    private fun setupView() {
+        cameraViewModel.text.observe(viewLifecycleOwner) { str ->
+            binding.txtRecognizedObject.text = str
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
         cameraManager.stop()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>,
+        grantResults: IntArray,
+    ) {
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                Toast.makeText(context, "camera permission granted", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Permissions not granted by the user.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
     }
 
     companion object {
