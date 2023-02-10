@@ -7,6 +7,6 @@ class GetRecognizedObjectUseCase(
     private val analyzer: CustomAnalyzer
 ) {
     operator fun invoke(): MutableStateFlow<String> {
-        return analyzer.recognizedObjectStateFlow
+        return analyzer.recognizedObject
     }
 }

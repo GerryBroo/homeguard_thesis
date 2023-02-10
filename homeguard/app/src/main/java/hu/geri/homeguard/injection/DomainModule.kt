@@ -8,6 +8,9 @@ import org.koin.dsl.module
 val domainModule = module {
     single<CustomAnalyzer> { CustomAnalyzer() }
 
+    // region Camera UseCase
+    single<CameraUseCases> { CameraUseCases(get(), get()) }
     single<GetRecognizedObjectUseCase> { GetRecognizedObjectUseCase(get()) }
-    single<CameraUseCases> { CameraUseCases(get()) }
+    single<GetRecognizedObjectUseCase> { GetRecognizedObjectUseCase(get()) }
+    // endregion
 }

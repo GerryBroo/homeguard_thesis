@@ -59,11 +59,13 @@ dependencies {
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
-    // MLKIT
+    // ML KIT
     def object_detection_version = "17.0.0"
     implementation "com.google.mlkit:object-detection-custom:${object_detection_version}"
+    def face_detection_version = "16.1.5"
+    implementation "com.google.mlkit:face-detection:${face_detection_version}"
 
-    // TFLITE
+    // TF LITE
     def tensorflow_lite_version = "0.4.0"
     implementation "org.tensorflow:tensorflow-lite-task-vision:${tensorflow_lite_version}"
     implementation "org.tensorflow:tensorflow-lite-gpu-delegate-plugin:${tensorflow_lite_version}"

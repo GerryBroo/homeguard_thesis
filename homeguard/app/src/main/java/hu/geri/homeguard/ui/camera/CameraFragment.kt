@@ -59,8 +59,11 @@ class CameraFragment : Fragment() {
     }
 
     private fun setupView() {
-        cameraViewModel.text.observe(viewLifecycleOwner) { str ->
+        cameraViewModel.recognizedObjectText.observe(viewLifecycleOwner) { str ->
             binding.txtRecognizedObject.text = str
+        }
+        cameraViewModel.recognizedFaceText.observe(viewLifecycleOwner) { str ->
+            binding.txtRecognizedFace.text = str
         }
     }
 

@@ -7,5 +7,6 @@
     <string name="title_camera">Camera</string>
     <string name="recognized_name">Recognized name:</string>
     <string name="recognized_object">Recognized object:</string>
+    <string name="camera_no_face_detected">No face detected</string>
     // endregion
 </resources>
