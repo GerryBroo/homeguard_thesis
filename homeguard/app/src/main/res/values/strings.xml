@@ -1,12 +1,15 @@
 <resources>
     <string name="app_name">Homeguard</string>
     <string name="title_home">Home</string>
-    <string name="title_notifications">Notifications</string>
 
-    // region Camera
+    <!-- region Camera -->
     <string name="title_camera">Camera</string>
     <string name="recognized_name">Recognized name:</string>
     <string name="recognized_object">Recognized object:</string>
     <string name="camera_no_face_detected">No face detected</string>
-    // endregion
+    <!-- endregion -->
+
+    <!-- region Face -->
+    <string name="title_face_gallery">Face Gallery</string>
+    <!-- endregion -->
 </resources>

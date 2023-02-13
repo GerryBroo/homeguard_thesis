@@ -1,4 +1,4 @@
-package hu.geri.homeguard.ui.camera
+package hu.geri.homeguard.ui.addface
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,15 +9,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class CameraViewModel(private val cameraUseCases: CameraUseCases) : ViewModel() {
+class AddNewFaceViewModel(private val cameraUseCases: CameraUseCases) : ViewModel() {
 
-    private var getRecognizedObjectJob: Job? = null
     private var getRecognizedFaceJob: Job? = null
-
-    private val _regonizedObjectText = MutableLiveData<String>().apply {
-        value = "This is notifications Fragment"
-    }
-    val recognizedObjectText: LiveData<String> = _regonizedObjectText
 
     private val _regonizedFaceText = MutableLiveData<String>().apply {
         value = "This is notifications Fragment"
@@ -34,19 +28,8 @@ class CameraViewModel(private val cameraUseCases: CameraUseCases) : ViewModel() 
             }.launchIn(viewModelScope)
     }
 
-    private fun getRecognizedObject() {
-        getRecognizedObjectJob?.cancel()
-        getRecognizedObjectJob = cameraUseCases.getRecognizedObjectUseCase()
-            .onEach { recognizedObject ->
-                _regonizedObjectText.apply {
-                    value = recognizedObject
-                }
-            }.launchIn(viewModelScope)
-    }
-
     // IMPORTANT TO BE ON THE BOTTOM, BECAUSE OF THE INIT FLOW
     init {
         getRecognizedFace()
-        getRecognizedObject()
     }
 }

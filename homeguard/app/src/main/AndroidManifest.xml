@@ -11,7 +11,7 @@
         android:maxSdkVersion="28" />
 
     <application
-        android:name=".Homeguard"
+        android:name=".HomeGuard"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -21,6 +21,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Homeguard"
         tools:targetApi="31">
+        <activity
+            android:name=".ui.addface.AddFaceActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -15,7 +15,6 @@ import androidx.lifecycle.LifecycleOwner
 import hu.geri.homeguard.domain.analyzer.CustomAnalyzer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.java.KoinJavaComponent.inject
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -25,7 +24,7 @@ class CameraManager(
     private val viewPreview: PreviewView,
 ) : KoinComponent {
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
-    private var lensFacing: Int = LENS_FACING_FRONT
+    private var lensFacing: Int = LENS_FACING_BACK
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
 
@@ -41,6 +40,8 @@ class CameraManager(
     }
 
     private fun bindCameraUseCases() {
+
+
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(Size(640, 480))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -52,17 +53,17 @@ class CameraManager(
 
         cameraProvider?.let { cameraProvider ->
             val cameraSelector = getCameraSelector()
-            val previewView = getPreviewUseCase()
+            val preview = Preview.Builder().build()
             cameraProvider.unbindAll()
             try {
                 camera = cameraProvider.bindToLifecycle(
                     owner,
                     cameraSelector,
-                    previewView,
+                    preview,
                     imageAnalysis
                 )
 
-                previewView.setSurfaceProvider(viewPreview.surfaceProvider)
+                preview.setSurfaceProvider(viewPreview.surfaceProvider)
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed $exc")
             }
