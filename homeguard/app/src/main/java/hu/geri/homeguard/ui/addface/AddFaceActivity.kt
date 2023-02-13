@@ -60,6 +60,9 @@ class AddFaceActivity : AppCompatActivity() {
         viewModel.recognizedFaceText.observe(this) { str ->
             tvRecognitionInfo.text = str
         }
+        viewModel.facePreview.observe(this) { preview ->
+            facePreview.setImageBitmap(preview.bitmap)
+        }
     }
 
     private fun controlAddFace() {
@@ -90,7 +93,7 @@ class AddFaceActivity : AppCompatActivity() {
         builder.setPositiveButton(
             "ADD"
         ) { _, _ ->
-//            viewModel.setNewFace(input.text.toString())
+            viewModel.setNewFace(input.text.toString())
             finish()
         }
         builder.setNegativeButton(

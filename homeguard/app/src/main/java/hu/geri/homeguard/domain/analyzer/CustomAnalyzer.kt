@@ -28,7 +28,7 @@ data class Azigen(
 class CustomAnalyzer(
 ) : ImageAnalysis.Analyzer {
 
-    private val objectDetector = customObjectDetector("homeguard.tflite")
+    private val objectDetector = customObjectDetector("bird_detection.tflite")
     private val faceDetector = customFaceDetector()
 
     val recognizedObject = MutableStateFlow("Undefined")
@@ -57,13 +57,13 @@ class CustomAnalyzer(
                 .addOnCompleteListener {
 
                     // TODO I don't know i need this
-//                    val planes = mediaImage.planes
-//                    if (planes.size >= 3) {
-//                        // Reset buffer position for each plane's buffer.
-//                        for (plane in planes) {
-//                            plane.buffer.rewind()
-//                        }
-//                    }
+                    val planes = mediaImage.planes
+                    if (planes.size >= 3) {
+                        // Reset buffer position for each plane's buffer.
+                        for (plane in planes) {
+                            plane.buffer.rewind()
+                        }
+                    }
 
                     faceDetector.process(processImage)
                         .addOnSuccessListener { faces ->
@@ -101,6 +101,16 @@ class CustomAnalyzer(
         } else {
             recognizedFace.value = "No face detected!"
         }
+    }
+
+    fun setNewFace(name: String) {
+
+        val result = SimilarityClassifier.Recognition(
+            "0", "", -1f
+        )
+
+        result.extra = embeedings
+        registered[name] = result
     }
 
 
