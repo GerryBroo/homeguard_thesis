@@ -7,9 +7,11 @@
     <string name="recognized_name">Recognized name:</string>
     <string name="recognized_object">Recognized object:</string>
     <string name="camera_no_face_detected">No face detected</string>
+    <string name="camera_recognition_info">Recognition info…</string>
+    <string name="camera_add_face">Add face</string>
     <!-- endregion -->
 
-    <!-- region Face -->
+    <!-- region Face Gallery -->
     <string name="title_face_gallery">Face Gallery</string>
     <!-- endregion -->
 </resources>

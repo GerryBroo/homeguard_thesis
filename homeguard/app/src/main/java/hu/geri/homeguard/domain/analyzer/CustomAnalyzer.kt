@@ -120,7 +120,7 @@ class CustomAnalyzer(
         HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
 
     // TODO rework because its a spaghetti
-    fun recognizeImage(bitmap: Bitmap) {
+    private fun recognizeImage(bitmap: Bitmap) {
 
         // set Face to Preview
 //        facePreview?.setImageBitmap(bitmap)

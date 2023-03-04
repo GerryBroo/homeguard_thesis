@@ -1,5 +1,6 @@
 package hu.geri.homeguard.ui.addface
 
+import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,10 +21,10 @@ class AddNewFaceViewModel(private val cameraUseCases: CameraUseCases) : ViewMode
     }
     val recognizedFaceText: LiveData<String> = _regonizedFaceText
 
-    private val _facePreview = MutableLiveData<Azigen>().apply {
+    private val _facePreview = MutableLiveData<Bitmap>().apply {
         value = null
     }
-    val facePreview: LiveData<Azigen> = _facePreview
+    val facePreview: LiveData<Bitmap> = _facePreview
 
     private fun getRecognizedFace() {
         getRecognizedFaceJob?.cancel()
@@ -40,7 +41,7 @@ class AddNewFaceViewModel(private val cameraUseCases: CameraUseCases) : ViewMode
         getFacePreviewJob = cameraUseCases.getPreviewUseCase()
             .onEach { preView ->
                 _facePreview.apply {
-                    value = preView
+                    value = preView.bitmap
                 }
             }.launchIn(viewModelScope)
     }

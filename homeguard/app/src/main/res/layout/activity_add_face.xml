@@ -6,107 +6,44 @@
     android:layout_height="match_parent"
     tools:context=".ui.addface.AddFaceActivity">
 
-    <LinearLayout
-        android:id="@+id/linearLayoutAddNewFace"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:orientation="horizontal"
-        android:weightSum="2"
-        android:gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/tvAddNewFace"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="face"
-            android:layout_weight="1"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageButton
-            android:id="@+id/btnFlipCameraActivity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="#FFF"
-            android:src="@drawable/ic_cameraswitch"
-            android:elevation="1dp" />
-
-    </LinearLayout>
-
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="297dp"
         android:layout_height="279dp"
+        android:layout_marginTop="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayoutAddNewFace"
-        app:layout_constraintVertical_bias="0">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.camera.view.PreviewView
-            android:id="@+id/previewViewActivity"
+            android:id="@+id/addFacePreview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </androidx.camera.view.PreviewView>
+            android:layout_height="match_parent" />
     </FrameLayout>
 
     <TextView
-        android:id="@+id/tvRecognitionInfo"
-        android:layout_width="164dp"
+        android:id="@+id/recognitionInfoText"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Add Face"
+        android:layout_marginTop="40dp"
+        android:hint="@string/camera_recognition_info"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/facePreview"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/container" />
 
-    <ImageView
-        android:id="@+id/facePreview"
-        android:layout_width="203dp"
-        android:layout_height="200dp"
-        android:background="#2C7E57C2"
-        android:elevation="1dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/container"
-        app:layout_constraintVertical_bias="0.435"
-        tools:srcCompat="@android:drawable/screen_background_light_transparent" />
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
+    <Button
+        android:id="@+id/btnAddNewFace"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:orientation="horizontal"
+        android:layout_marginTop="40dp"
+        android:text="@string/camera_add_face"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/facePreview">
-
-        <Button
-            android:id="@+id/btnAddNewFace"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_cameraswitch"
-            android:rotation="0"
-            android:rotationX="0"
-            android:rotationY="0"
-            android:text="Add Face"
-            android:textAlignment="center"
-            android:visibility="visible"
-            tools:visibility="visible" />
-
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/recognitionInfoText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

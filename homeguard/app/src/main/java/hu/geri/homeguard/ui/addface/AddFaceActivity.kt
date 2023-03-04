@@ -1,26 +1,18 @@
 package hu.geri.homeguard.ui.addface
 
-import android.app.AlertDialog
 import android.os.Bundle
-import android.text.InputType
-import android.util.Log
-import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import hu.geri.homeguard.R
 import hu.geri.homeguard.domain.camera.CameraManager
-import hu.geri.homeguard.ui.camera.CameraViewModel
 import kotlinx.android.synthetic.main.activity_add_face.*
-import kotlinx.android.synthetic.main.fragment_camera.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class AddFaceActivity : AppCompatActivity() {
+class AddFaceActivity : AppCompatActivity(), AddFaceDialog.AddFaceListener {
 
     private val viewModel: AddNewFaceViewModel by viewModel()
 
     private lateinit var cameraManager: CameraManager
-    private var changeCamera = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +25,6 @@ class AddFaceActivity : AppCompatActivity() {
 
     private fun initFunctions() {
         startCamera()
-        controlCameraSelectCamera()
         controlAddFace()
     }
 
@@ -41,27 +32,14 @@ class AddFaceActivity : AppCompatActivity() {
         cameraManager = CameraManager(
             owner =  (this as LifecycleOwner),
             context = this,
-            viewPreview = previewViewActivity
+            viewPreview = addFacePreview
         )
-        cameraManager.startCamera(onFrontCamera = false)
-    }
-
-    private fun controlCameraSelectCamera() {
-        changeCamera = !changeCamera
-        btnFlipCameraActivity.setOnClickListener {
-            cameraManager.startCamera(onFrontCamera = changeCamera)
-        }
+        cameraManager.startCamera(true)
     }
 
     private fun setupView() {
-//        cameraViewModel.recognizedObjectText.observe(viewLifecycleOwner) { str ->
-//            binding.txtRecognizedObject.text = str
-//        }
         viewModel.recognizedFaceText.observe(this) { str ->
-            tvRecognitionInfo.text = str
-        }
-        viewModel.facePreview.observe(this) { preview ->
-            facePreview.setImageBitmap(preview.bitmap)
+            recognitionInfoText.text = str
         }
     }
 
@@ -70,39 +48,21 @@ class AddFaceActivity : AppCompatActivity() {
     }
 
     private fun addFace() {
-        buildAlert()
-//        when (viewModel.isNewFaceAvailable()) {
-//            is OkFace -> buildAlert()
-//            is NoFace -> {
-//                Toast.makeText(this, "No face detected!", Toast.LENGTH_SHORT).show()
-//            }
-//            is ExistingFace -> {
-//                Toast.makeText(this, "This face is already existed", Toast.LENGTH_SHORT).show()
-//            }
-//        }
+        showAddFaceDialog()
     }
 
-    private fun buildAlert() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Enter Name")
+    private fun showAddFaceDialog() {
+        val dialog = AddFaceDialog(this)
+        dialog.show(supportFragmentManager, "ADD_FACE_DIALOG")
+    }
 
-        val input = EditText(this)
-        input.inputType = InputType.TYPE_CLASS_TEXT
-        builder.setView(input)
+    override fun onDialogSubmit(name: String) {
+        viewModel.setNewFace(name)
+        finish()
+    }
 
-        builder.setPositiveButton(
-            "ADD"
-        ) { _, _ ->
-            viewModel.setNewFace(input.text.toString())
-            finish()
-        }
-        builder.setNegativeButton(
-            "Cancel"
-        ) { dialog, _ ->
-            finish()
-            dialog.cancel()
-        }
-        builder.show()
+    override fun onDialogCancel() {
+        finish()
     }
 
     override fun onDestroy() {

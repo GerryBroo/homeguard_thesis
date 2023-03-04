@@ -9,7 +9,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class CameraViewModel(private val cameraUseCases: CameraUseCases) : ViewModel() {
+class CameraViewModel(
+    private val cameraUseCases: CameraUseCases
+) : ViewModel() {
 
     private var getRecognizedObjectJob: Job? = null
     private var getRecognizedFaceJob: Job? = null

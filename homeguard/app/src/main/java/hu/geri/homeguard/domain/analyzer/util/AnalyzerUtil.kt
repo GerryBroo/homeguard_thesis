@@ -27,6 +27,16 @@ fun customObjectDetector(tfLiteModel: String): ObjectDetector {
         .build()
 
     return ObjectDetection.getClient(options)
+
+//    val options = ObjectDetector.ObjectDetectorOptions.builder()
+//        .setMaxResults(5)
+//        .setScoreThreshold(0.3f)
+//        .build()
+//    return ObjectDetector.createFromFileAndOptions(
+//        context,
+//        "homeguardv2.tflite",
+//        options
+//    )
 }
 
 fun customFaceDetector(): FaceDetector {

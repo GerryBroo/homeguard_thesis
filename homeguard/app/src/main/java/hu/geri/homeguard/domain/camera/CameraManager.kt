@@ -40,8 +40,6 @@ class CameraManager(
     }
 
     private fun bindCameraUseCases() {
-
-
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(Size(640, 480))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
