@@ -10,8 +10,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import hu.geri.homeguard.databinding.FragmentCameraBinding
 import hu.geri.homeguard.domain.camera.CameraManager
+import kotlinx.android.synthetic.main.fragment_face_gallery.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class CameraFragment : Fragment() {
@@ -22,7 +26,7 @@ class CameraFragment : Fragment() {
     private val cameraViewModel: CameraViewModel by viewModel()
 
     private lateinit var cameraManager: CameraManager
-    private var changeCamera = false
+    private var isLensFacingFront = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,19 +52,26 @@ class CameraFragment : Fragment() {
             context = requireContext(),
             viewPreview = binding.previewCamera
         )
-        cameraManager.startCamera(onFrontCamera = false)
+        cameraManager.startCamera(true)
     }
 
     private fun controlCameraSelectCamera() {
-        changeCamera = !changeCamera
         binding.btnFlipCamera.setOnClickListener {
-            cameraManager.startCamera(onFrontCamera = changeCamera)
+            cameraManager.startCamera(onFrontCamera = changeCamera())
         }
     }
 
+    private fun changeCamera(): Boolean {
+        isLensFacingFront = !isLensFacingFront
+        return isLensFacingFront
+    }
+
     private fun setupView() {
-        cameraViewModel.text.observe(viewLifecycleOwner) { str ->
+        cameraViewModel.recognizedObjectText.observe(viewLifecycleOwner) { str ->
             binding.txtRecognizedObject.text = str
+        }
+        cameraViewModel.recognizedFaceText.observe(viewLifecycleOwner) { str ->
+            binding.txtRecognizedFace.text = str
         }
     }
 

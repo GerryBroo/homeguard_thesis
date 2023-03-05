@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/layoutGalleryItem"
+    android:padding="15dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imgGalleryItem"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@mipmap/ic_launcher"/>
+
+    <TextView
+        android:id="@+id/tvGalleryName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fcae"
+        android:layout_toEndOf="@+id/imgGalleryItem"
+        android:textColor="@color/black"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="10dp"
+        android:textSize="15sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/tvGalleryCaptureDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2220"
+        android:layout_toEndOf="@+id/tvGalleryName"
+        android:textColor="@color/black"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="10dp"
+        android:textSize="11sp">
+    </TextView>
+
+    <ImageButton
+        android:id="@+id/btnDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@+id/tvGalleryCaptureDate"
+        android:contentDescription="Delete"
+        android:src="@drawable/ic_cameraswitch" />
+
+</RelativeLayout>

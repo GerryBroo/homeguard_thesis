@@ -18,8 +18,8 @@
         tools:layout="@layout/fragment_camera" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="hu.geri.homeguard.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_face_gallery"
+        android:name="hu.geri.homeguard.ui.facegallery.FaceGalleryFragment"
+        android:label="@string/title_face_gallery"
+        tools:layout="@layout/fragment_face_gallery" />
 </navigation>
