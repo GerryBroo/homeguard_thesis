@@ -10,7 +10,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AddFaceActivity : AppCompatActivity(), AddFaceDialog.AddFaceListener {
 
-    private val viewModel: AddNewFaceViewModel by viewModel()
+    private val viewModel: AddFaceViewModel by viewModel()
 
     private lateinit var cameraManager: CameraManager
 
@@ -52,8 +52,9 @@ class AddFaceActivity : AppCompatActivity(), AddFaceDialog.AddFaceListener {
     }
 
     private fun showAddFaceDialog() {
-        val dialog = AddFaceDialog(this)
-        dialog.show(supportFragmentManager, "ADD_FACE_DIALOG")
+        val dialog = viewModel.getPreview()?.let { preview ->
+            AddFaceDialog(this, preview) }
+        dialog?.show(supportFragmentManager, "ADD_FACE_DIALOG")
     }
 
     override fun onDialogSubmit(name: String) {

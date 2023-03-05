@@ -1,5 +1,6 @@
 package hu.geri.homeguard.ui.addface
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +10,8 @@ import hu.geri.homeguard.R
 import kotlinx.android.synthetic.main.add_face_dialog.view.*
 
 class AddFaceDialog(
-    private val addFaceListener: AddFaceListener
+    private val addFaceListener: AddFaceListener,
+    private val facePreview: Bitmap
 ) : DialogFragment() {
 
     override fun onCreateView(
@@ -19,8 +21,9 @@ class AddFaceDialog(
     ): View? {
         val rootView: View = inflater.inflate(R.layout.add_face_dialog, container, false)
 
+        rootView.facePreview.setImageBitmap(facePreview)
+
         rootView.addFaceDialogCancelBtn.setOnClickListener {
-            dismiss()
             addFaceListener.onDialogCancel()
         }
 

@@ -2,10 +2,8 @@ package hu.geri.homeguard.domain.analyzer
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.RectF
 import android.media.Image
-import android.provider.Settings.System.getString
 import android.util.Log
 import android.util.Pair
 import androidx.camera.core.ImageAnalysis
@@ -14,19 +12,14 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.objects.DetectedObject
 import hu.geri.homeguard.MainActivity
-import hu.geri.homeguard.R
+import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-data class Azigen(
-    var bitmap: Bitmap? = null
-)
-
-class CustomAnalyzer(
-) : ImageAnalysis.Analyzer {
+class CustomAnalyzer() : ImageAnalysis.Analyzer {
 
     private val objectDetector = customObjectDetector("bird_detection.tflite")
     private val faceDetector = customFaceDetector()
@@ -34,7 +27,7 @@ class CustomAnalyzer(
     val recognizedObject = MutableStateFlow("Undefined")
     val recognizedFace = MutableStateFlow("Undefined")
 
-    val prevViewFace = MutableStateFlow<Azigen>(Azigen())
+    var addFaceData: AddFaceData? = null
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -44,12 +37,10 @@ class CustomAnalyzer(
             val rotationDegrees = imageProxy.imageInfo.rotationDegrees
             val processImage = InputImage.fromMediaImage(mediaImage, rotationDegrees)
 
-
             // TODO REFACTOR
             objectDetector.process(processImage)
                 .addOnSuccessListener { objects ->
                     processObjects(objects)
-
                 }
                 .addOnFailureListener {
                     Log.v("ImageAnalyzer", "Error - ${it.message}")
@@ -74,7 +65,6 @@ class CustomAnalyzer(
                         }.addOnCompleteListener {
                             imageProxy.close()
                         }
-
                 }
         }
     }
@@ -85,9 +75,8 @@ class CustomAnalyzer(
         }
     }
 
-
     private fun processFaces(mediaImage: Image, rotationDegree: Int, faces: List<Face>) {
-        if(faces.isNotEmpty()) {
+        if (faces.isNotEmpty()) {
             val frameBMP = toBitmap(mediaImage)
             val rotatedFace = rotateBitmap(frameBMP, rotationDegree)
 
@@ -103,16 +92,15 @@ class CustomAnalyzer(
         }
     }
 
-    fun setNewFace(name: String) {
+    fun setNewFace(name: String, emb: Array<FloatArray>) {
 
         val result = SimilarityClassifier.Recognition(
             "0", "", -1f
         )
 
-        result.extra = embeedings
+        result.extra = emb
         registered[name] = result
     }
-
 
     var isModelQuantized = false // todo constans
     lateinit var embeedings: Array<FloatArray> // todo szinten nem vagom miert lateinit
@@ -122,12 +110,9 @@ class CustomAnalyzer(
     // TODO rework because its a spaghetti
     private fun recognizeImage(bitmap: Bitmap) {
 
-        // set Face to Preview
-//        facePreview?.setImageBitmap(bitmap)
-        prevViewFace.value.bitmap = bitmap
-
         // Create ByteBuffer to store normalized image
-        val imgData = ByteBuffer.allocateDirect(1 * CROPPED_BITMAP_SIZE * CROPPED_BITMAP_SIZE * 3 * 4)
+        val imgData =
+            ByteBuffer.allocateDirect(1 * CROPPED_BITMAP_SIZE * CROPPED_BITMAP_SIZE * 3 * 4)
         imgData.order(ByteOrder.nativeOrder())
         val intValues = IntArray(CROPPED_BITMAP_SIZE * CROPPED_BITMAP_SIZE)
 
@@ -172,10 +157,15 @@ class CustomAnalyzer(
                     // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
                     recognizedFace.value = name
                 } else {
-                    recognizedFace.value = "Unknown"
                 }
             }
+        } else {
+            recognizedFace.value = "Unknown"
+
         }
+
+        // Set the information to add face dialog
+        addFaceData = AddFaceData(bitmap, embeedings)
 
 //        faceManager.manageFace(recognitionInfo.text.toString())
     }

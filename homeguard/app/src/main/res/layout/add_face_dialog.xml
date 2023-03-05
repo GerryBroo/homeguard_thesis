@@ -25,7 +25,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enter name:" />
+        android:text="@string/add_face_dialog_enter_name" />
 
     <EditText
         android:id="@+id/nameEditText"
@@ -43,7 +43,7 @@
             android:id="@+id/addFaceDialogCancelBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="@string/add_face_dialog_cancel"
             android:layout_margin="20sp"
             android:backgroundTint="#EC407A" />
         <Button
@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="20sp"
-            android:text="Submit"
+            android:text="@string/add_face_dialog_submit"
             android:backgroundTint="#26CADA" />
     </LinearLayout>
 

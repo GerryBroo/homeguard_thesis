@@ -14,4 +14,10 @@
     <!-- region Face Gallery -->
     <string name="title_face_gallery">Face Gallery</string>
     <!-- endregion -->
+
+    <!-- region Add face dialog -->
+    <string name="add_face_dialog_enter_name">Enter name:</string>
+    <string name="add_face_dialog_cancel">Cancel</string>
+    <string name="add_face_dialog_submit">Submit</string>
+    <!-- endregion -->
 </resources>

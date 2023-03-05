@@ -5,9 +5,9 @@ import hu.geri.homeguard.domain.analyzer.CustomAnalyzer
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class AddFaceUseCase(
-    private val analyzer: CustomAnalyzer
+    private val analyzer: CustomAnalyzer,
 ) {
-    operator fun invoke(name: String) {
-        return analyzer.setNewFace(name)
+    operator fun invoke(name: String, emb: Array<FloatArray>) {
+        return analyzer.setNewFace(name, emb)
     }
 }
