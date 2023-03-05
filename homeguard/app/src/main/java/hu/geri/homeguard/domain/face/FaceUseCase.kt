@@ -2,6 +2,7 @@ package hu.geri.homeguard.domain.face
 
 import hu.geri.homeguard.data.face.FaceDiskDataSource
 import hu.geri.homeguard.data.face.model.RecognizedFaceDisk
+import hu.geri.homeguard.data.face.model.toRecognizedFaceDisk
 import hu.geri.homeguard.domain.face.model.RecognizedFace
 import hu.geri.homeguard.domain.face.model.toRecognizedFaces
 import java.text.SimpleDateFormat
@@ -10,6 +11,7 @@ import java.util.*
 interface FaceUseCase {
     fun getFaces(): FacesResult
     suspend fun saveFace(name: String)
+    suspend fun deleteFace(face: RecognizedFace)
 }
 
 class FaceUseCaseImpl(
@@ -31,6 +33,10 @@ class FaceUseCaseImpl(
         ).format(System.currentTimeMillis())
 
         faceDiskDataSource.insertFace(RecognizedFaceDisk(0, name, date, ""))
+    }
+
+    override suspend fun deleteFace(face: RecognizedFace) {
+        faceDiskDataSource.deleteFace(face.toRecognizedFaceDisk())
     }
 
     companion object {

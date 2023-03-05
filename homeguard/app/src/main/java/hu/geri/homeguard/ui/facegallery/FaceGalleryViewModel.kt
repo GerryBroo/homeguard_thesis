@@ -1,7 +1,6 @@
 package hu.geri.homeguard.ui.facegallery
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -28,6 +27,8 @@ class FaceGalleryViewModel(
     }
     val face: LiveData<List<RecognizedFace>> = _faces
 
+    // TODO fix UI STATE https://medium.com/android-news/architecture-components-easy-mapping-of-actions-and-ui-state-207663e3fdd
+
     fun loadFaces() {
         viewModelScope.launch(Dispatchers.IO) {
             when (val result = faceUseCase.getFaces()) {
@@ -35,8 +36,6 @@ class FaceGalleryViewModel(
                     _uiState.update { currentUiState ->
                         currentUiState.copy(isLoading = false, faces = result.face)
                     }
-                    Log.d("asd", result.face.size.toString())
-
                 }
                 is FacesEmptyError -> {
                     _uiState.update { currentUiState ->
@@ -44,6 +43,12 @@ class FaceGalleryViewModel(
                     }
                 }
             }
+        }
+    }
+
+    fun deleteFace(face: RecognizedFace) {
+        viewModelScope.launch(Dispatchers.IO) {
+            faceUseCase.deleteFace(face)
         }
     }
 }

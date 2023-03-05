@@ -70,7 +70,7 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
     }
 
     override fun onDelete(face: RecognizedFace) {
-        return
+        viewModel.deleteFace(face)
     }
 
     override fun onDestroyView() {
