@@ -1,5 +1,7 @@
 package hu.geri.homeguard.ui.facegallery
 
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,6 +10,7 @@ import hu.geri.homeguard.domain.face.FaceUseCase
 import hu.geri.homeguard.domain.face.FacesEmptyError
 import hu.geri.homeguard.domain.face.FacesSuccess
 import hu.geri.homeguard.domain.face.model.RecognizedFace
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -26,16 +29,18 @@ class FaceGalleryViewModel(
     val face: LiveData<List<RecognizedFace>> = _faces
 
     fun loadFaces() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             when (val result = faceUseCase.getFaces()) {
                 is FacesSuccess -> {
                     _uiState.update { currentUiState ->
-                        currentUiState.copy(faces = result.face)
+                        currentUiState.copy(isLoading = false, faces = result.face)
                     }
+                    Log.d("asd", result.face.size.toString())
+
                 }
                 is FacesEmptyError -> {
                     _uiState.update { currentUiState ->
-                        currentUiState.copy(errorMessage = "Empty list")
+                        currentUiState.copy(isLoading = false, errorMessage = "Empty list")
                     }
                 }
             }

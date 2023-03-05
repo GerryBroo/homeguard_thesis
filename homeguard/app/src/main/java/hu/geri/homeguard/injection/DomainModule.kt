@@ -7,7 +7,7 @@ import hu.geri.homeguard.domain.face.FaceUseCaseImpl
 import org.koin.dsl.module
 
 val domainModule = module {
-    single { CustomAnalyzer() }
+    single { CustomAnalyzer(get()) }
 
     // region Camera UseCase
     single { CameraUseCases(get(), get(), get(), get()) }

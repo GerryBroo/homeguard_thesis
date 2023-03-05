@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.camera.usecase.CameraUseCases
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -44,7 +45,9 @@ class AddFaceViewModel(private val cameraUseCases: CameraUseCases) : ViewModel()
     }
 
     fun setNewFace(name: String) {
-        newFaceData.embeedings?.let { cameraUseCases.addFaceUseCase(name, it) }
+        viewModelScope.launch(Dispatchers.IO) {
+            newFaceData.embeedings?.let { cameraUseCases.addFaceUseCase(name, it) }
+        }
     }
 
     // IMPORTANT TO BE ON THE BOTTOM, BECAUSE OF THE INIT FLOW

@@ -15,11 +15,14 @@ import hu.geri.homeguard.MainActivity
 import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
+import hu.geri.homeguard.domain.face.FaceUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class CustomAnalyzer() : ImageAnalysis.Analyzer {
+class CustomAnalyzer(
+    private val faceUseCase: FaceUseCase
+) : ImageAnalysis.Analyzer {
 
     private val objectDetector = customObjectDetector("bird_detection.tflite")
     private val faceDetector = customFaceDetector()
@@ -92,7 +95,7 @@ class CustomAnalyzer() : ImageAnalysis.Analyzer {
         }
     }
 
-    fun setNewFace(name: String, emb: Array<FloatArray>) {
+    suspend fun setNewFace(name: String, emb: Array<FloatArray>) {
 
         val result = SimilarityClassifier.Recognition(
             "0", "", -1f
@@ -100,6 +103,8 @@ class CustomAnalyzer() : ImageAnalysis.Analyzer {
 
         result.extra = emb
         registered[name] = result
+
+        faceUseCase.saveFace(name)
     }
 
     var isModelQuantized = false // todo constans
