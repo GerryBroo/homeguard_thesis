@@ -70,6 +70,7 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
     }
 
     override fun onDelete(face: RecognizedFace) {
+        // TODO doesn't refresh the UI, make it do
         viewModel.deleteFace(face)
     }
 

@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:text="Fcae"
         android:layout_toEndOf="@+id/imgGalleryItem"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:layout_centerVertical="true"
         android:layout_marginStart="10dp"
         android:textSize="15sp">
@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:text="2220"
         android:layout_toEndOf="@+id/tvGalleryName"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:layout_centerVertical="true"
         android:layout_marginStart="10dp"
         android:textSize="11sp">
