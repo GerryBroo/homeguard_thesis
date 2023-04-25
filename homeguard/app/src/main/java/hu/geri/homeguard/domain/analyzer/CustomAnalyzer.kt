@@ -1,6 +1,7 @@
 package hu.geri.homeguard.domain.analyzer
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.media.Image
@@ -16,11 +17,14 @@ import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
 import hu.geri.homeguard.domain.camera.PhotoCapture
+import hu.geri.homeguard.domain.face.util.insertToSP
+import hu.geri.homeguard.domain.face.util.readFromSP
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class CustomAnalyzer(
+    private val context: Context,
     private val photoCapture: PhotoCapture
 ) : ImageAnalysis.Analyzer {
 
@@ -31,6 +35,16 @@ class CustomAnalyzer(
     val recognizedFace = MutableStateFlow("Undefined")
 
     var addFaceData: AddFaceData? = null
+
+    var isModelQuantized = false // todo constans
+    lateinit var embeedings: Array<FloatArray> // todo szinten nem vagom miert lateinit
+    var registered: HashMap<String?, SimilarityClassifier.Recognition> =
+        HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
+    lateinit var addFaceBitmap : Bitmap
+
+    init {
+        registered = readFromSP(context)
+    }
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -95,7 +109,7 @@ class CustomAnalyzer(
         }
     }
 
-    suspend fun setNewFace(name: String, emb: Array<FloatArray>) {
+    fun setNewFace(name: String, emb: Array<FloatArray>) {
 
         val result = SimilarityClassifier.Recognition(
             "0", "", -1f
@@ -103,13 +117,9 @@ class CustomAnalyzer(
 
         result.extra = emb
         registered[name] = result
-    }
 
-    var isModelQuantized = false // todo constans
-    lateinit var embeedings: Array<FloatArray> // todo szinten nem vagom miert lateinit
-    var registered: HashMap<String?, SimilarityClassifier.Recognition> =
-        HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
-    lateinit var addFaceBitmap : Bitmap
+        insertToSP(context, registered)
+    }
 
     // TODO rework because its a spaghetti
     private fun recognizeImage(bitmap: Bitmap) {

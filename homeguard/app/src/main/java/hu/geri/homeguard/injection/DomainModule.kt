@@ -13,7 +13,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val domainModule = module {
-    single { CustomAnalyzer(get()) }
+    single { CustomAnalyzer(androidContext(), get()) }
 
     // region Camera
     single { CameraUseCases(get(), get(), get()) }
@@ -29,7 +29,7 @@ val domainModule = module {
     // endregion
 
     // region Face recognition
-    single<FaceUseCase> { FaceUseCaseImpl(get(), get()) }
-    single { FaceUseCaseImpl(get(), get()) }
+    single<FaceUseCase> { FaceUseCaseImpl(androidContext(), get(), get()) }
+    single { FaceUseCaseImpl(androidContext(), get(), get()) }
     // endregion
 }
