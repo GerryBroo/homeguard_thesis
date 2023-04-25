@@ -7,12 +7,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.camera.usecase.CameraUseCases
+import hu.geri.homeguard.domain.face.FaceUseCase
+import hu.geri.homeguard.domain.face.util.deleteFaceImage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.io.Closeable
 
-class AddFaceViewModel(private val cameraUseCases: CameraUseCases) : ViewModel() {
+class AddFaceViewModel(
+    private val cameraUseCases: CameraUseCases,
+    private val faceUseCase: FaceUseCase
+) : ViewModel() {
 
     private var getRecognizedFaceJob: Job? = null
     private val _regonizedFaceText = MutableLiveData<String>().apply {
@@ -36,15 +43,22 @@ class AddFaceViewModel(private val cameraUseCases: CameraUseCases) : ViewModel()
         viewModelScope.launch {
             val faceData = cameraUseCases.getPreviewUseCase()
             newFaceData = AddFaceData(
-                faceData?.bitmap,
-                faceData?.embeedings
+                faceData.bitmap,
+                faceData.embeedings,
+                faceData.url
             )
         }
         return newFaceData.bitmap
     }
 
     fun setNewFace(name: String) {
-        newFaceData.embeedings?.let { cameraUseCases.addFaceUseCase(name, it) }
+        viewModelScope.launch(Dispatchers.IO) {
+            newFaceData.embeedings?.let { faceUseCase.saveFace(name, it, newFaceData.url) }
+        }
+    }
+
+    fun cancelFaceImage() {
+        deleteFaceImage(newFaceData.url)
     }
 
     // IMPORTANT TO BE ON THE BOTTOM, BECAUSE OF THE INIT FLOW

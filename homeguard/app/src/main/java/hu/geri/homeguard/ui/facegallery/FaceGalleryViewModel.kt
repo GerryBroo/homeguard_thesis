@@ -8,6 +8,7 @@ import hu.geri.homeguard.domain.face.FaceUseCase
 import hu.geri.homeguard.domain.face.FacesEmptyError
 import hu.geri.homeguard.domain.face.FacesSuccess
 import hu.geri.homeguard.domain.face.model.RecognizedFace
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -25,20 +26,28 @@ class FaceGalleryViewModel(
     }
     val face: LiveData<List<RecognizedFace>> = _faces
 
+    // TODO fix UI STATE https://medium.com/android-news/architecture-components-easy-mapping-of-actions-and-ui-state-207663e3fdd
+
     fun loadFaces() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             when (val result = faceUseCase.getFaces()) {
                 is FacesSuccess -> {
                     _uiState.update { currentUiState ->
-                        currentUiState.copy(faces = result.face)
+                        currentUiState.copy(isLoading = false, faces = result.face)
                     }
                 }
                 is FacesEmptyError -> {
                     _uiState.update { currentUiState ->
-                        currentUiState.copy(errorMessage = "Empty list")
+                        currentUiState.copy(isLoading = false, errorMessage = "Empty list")
                     }
                 }
             }
+        }
+    }
+
+    fun deleteFace(face: RecognizedFace) {
+        viewModelScope.launch(Dispatchers.IO) {
+            faceUseCase.deleteFace(face)
         }
     }
 }

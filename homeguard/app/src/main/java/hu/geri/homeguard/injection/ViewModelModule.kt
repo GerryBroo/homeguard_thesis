@@ -9,5 +9,5 @@ import org.koin.dsl.module
 val viewModelModule = module {
     viewModel { CameraViewModel(get()) }
     viewModel { FaceGalleryViewModel(get()) }
-    viewModel { AddFaceViewModel(get()) }
+    viewModel { AddFaceViewModel(get(), get()) }
 }

@@ -1,6 +1,7 @@
 package hu.geri.homeguard.domain.analyzer
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.media.Image
@@ -15,11 +16,17 @@ import hu.geri.homeguard.MainActivity
 import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
+import hu.geri.homeguard.domain.camera.PhotoCapture
+import hu.geri.homeguard.domain.face.util.insertToSP
+import hu.geri.homeguard.domain.face.util.readFromSP
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class CustomAnalyzer() : ImageAnalysis.Analyzer {
+class CustomAnalyzer(
+    private val context: Context,
+    private val photoCapture: PhotoCapture
+) : ImageAnalysis.Analyzer {
 
     private val objectDetector = customObjectDetector("bird_detection.tflite")
     private val faceDetector = customFaceDetector()
@@ -28,6 +35,16 @@ class CustomAnalyzer() : ImageAnalysis.Analyzer {
     val recognizedFace = MutableStateFlow("Undefined")
 
     var addFaceData: AddFaceData? = null
+
+    var isModelQuantized = false // todo constans
+    lateinit var embeedings: Array<FloatArray> // todo szinten nem vagom miert lateinit
+    var registered: HashMap<String?, SimilarityClassifier.Recognition> =
+        HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
+    lateinit var addFaceBitmap : Bitmap
+
+    init {
+        registered = readFromSP(context)
+    }
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -100,12 +117,9 @@ class CustomAnalyzer() : ImageAnalysis.Analyzer {
 
         result.extra = emb
         registered[name] = result
-    }
 
-    var isModelQuantized = false // todo constans
-    lateinit var embeedings: Array<FloatArray> // todo szinten nem vagom miert lateinit
-    var registered: HashMap<String?, SimilarityClassifier.Recognition> =
-        HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
+        insertToSP(context, registered)
+    }
 
     // TODO rework because its a spaghetti
     private fun recognizeImage(bitmap: Bitmap) {
@@ -165,9 +179,14 @@ class CustomAnalyzer() : ImageAnalysis.Analyzer {
         }
 
         // Set the information to add face dialog
-        addFaceData = AddFaceData(bitmap, embeedings)
+        //addFaceData = AddFaceData(bitmap, embeedings, photoCapture.takePhoto())
+        addFaceBitmap = bitmap
 
 //        faceManager.manageFace(recognitionInfo.text.toString())
+    }
+
+    fun newFaceEvent(): AddFaceData {
+        return AddFaceData(addFaceBitmap, embeedings, photoCapture.takePhoto())
     }
 
     // Compare Faces by distance between face embeddings

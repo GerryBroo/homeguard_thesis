@@ -36,7 +36,6 @@
             android:src="@drawable/ic_home_black_24dp" />
     </LinearLayout>
 
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_gallery"
         android:layout_width="match_parent"

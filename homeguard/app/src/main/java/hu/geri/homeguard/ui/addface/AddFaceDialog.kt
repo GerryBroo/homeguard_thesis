@@ -1,5 +1,6 @@
 package hu.geri.homeguard.ui.addface
 
+import android.content.DialogInterface
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -32,6 +33,11 @@ class AddFaceDialog(
         }
 
         return rootView
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        addFaceListener.onDialogCancel()
     }
 
     interface AddFaceListener {

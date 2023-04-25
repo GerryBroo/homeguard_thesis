@@ -4,16 +4,14 @@ import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
 import android.util.Size
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import hu.geri.homeguard.domain.analyzer.CustomAnalyzer
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -21,7 +19,7 @@ import java.util.concurrent.Executors
 class CameraManager(
     private val owner: LifecycleOwner,
     private val context: Context,
-    private val viewPreview: PreviewView,
+    private val viewPreview: PreviewView
 ) : KoinComponent {
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var lensFacing: Int = LENS_FACING_BACK
@@ -29,6 +27,7 @@ class CameraManager(
     private var cameraProvider: ProcessCameraProvider? = null
 
     private val customAnalyzer: CustomAnalyzer by inject()
+    private val imageCapture: ImageCapture by inject()
 
     fun startCamera(onFrontCamera: Boolean?) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
@@ -49,6 +48,8 @@ class CameraManager(
             customAnalyzer
         )
 
+        //val imageCapture=ImageCapture.Builder().build()
+
         cameraProvider?.let { cameraProvider ->
             val cameraSelector = getCameraSelector()
             val preview = Preview.Builder().build()
@@ -58,7 +59,8 @@ class CameraManager(
                     owner,
                     cameraSelector,
                     preview,
-                    imageAnalysis
+                    imageAnalysis,
+                    imageCapture
                 )
 
                 preview.setSurfaceProvider(viewPreview.surfaceProvider)

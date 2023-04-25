@@ -48,6 +48,8 @@ class MainActivity : AppCompatActivity() {
         } catch (e: IOException) {
             e.printStackTrace()
         }
+
+        outputFileUri = getOutputDirectory()
     }
 
     // TODO refactor spaghetti

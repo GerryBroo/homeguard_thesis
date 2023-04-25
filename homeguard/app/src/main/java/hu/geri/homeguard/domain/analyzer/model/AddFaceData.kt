@@ -4,7 +4,8 @@ import android.graphics.Bitmap
 
 data class AddFaceData(
     var bitmap: Bitmap? = null,
-    var embeedings: Array<FloatArray>? = null
+    var embeedings: Array<FloatArray>? = null,
+    var url: String = ""
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

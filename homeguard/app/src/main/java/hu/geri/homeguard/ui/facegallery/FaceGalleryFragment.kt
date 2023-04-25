@@ -22,7 +22,7 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
     private var _binding: FragmentFaceGalleryBinding? = null
     private val binding get() = _binding!!
 
-    private val faceGalleryViewModel: FaceGalleryViewModel by viewModel()
+    private val viewModel: FaceGalleryViewModel by viewModel()
     private lateinit var adapter: FaceGalleryAdapter
 
     override fun onCreateView(
@@ -38,11 +38,15 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         setupView()
-
         btnAddFace.setOnClickListener {
             val intent = Intent(activity, AddFaceActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadFaces()
     }
 
     private fun setupView() {
@@ -52,7 +56,7 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                faceGalleryViewModel.uiState.collect { uiState ->
+                viewModel.uiState.collect { uiState ->
                     uiState.faces.let {
                         adapter.submitList(it)
                     }
@@ -66,7 +70,8 @@ class FaceGalleryFragment : Fragment(), FaceGalleryAdapter.FaceClickListener {
     }
 
     override fun onDelete(face: RecognizedFace) {
-        return
+        // TODO doesn't refresh the UI, make it do
+        viewModel.deleteFace(face)
     }
 
     override fun onDestroyView() {
