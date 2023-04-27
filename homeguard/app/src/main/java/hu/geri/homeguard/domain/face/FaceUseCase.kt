@@ -21,7 +21,7 @@ interface FaceUseCase {
 class FaceUseCaseImpl(
     private val context: Context,
     private val faceDiskDataSource: FaceDiskDataSource,
-    private val analyzer: CustomAnalyzer
+    private val faceManager: FaceManager
 ) : FaceUseCase {
 
     override fun getFaces(): FacesResult {
@@ -39,7 +39,7 @@ class FaceUseCaseImpl(
         ).format(System.currentTimeMillis())
 
         faceDiskDataSource.insertFace(RecognizedFaceDisk(0, name, date, url))
-        analyzer.setNewFace(name, emb)
+        faceManager.setNewFace(name, emb)
     }
 
     override suspend fun deleteFace(face: RecognizedFace) {

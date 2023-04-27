@@ -36,7 +36,7 @@ val domainModule = module {
 
     single { CustomAnalyzer(androidContext(), get(), get()) }
 
-    single { FaceManager(get()) }
+    single { FaceManager(androidContext(), get()) }
     // endregion
 
     // region History
