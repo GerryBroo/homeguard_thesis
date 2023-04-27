@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/rowHistoryItem"
+    android:padding="15dp">
+
+    <TextView
+        android:id="@+id/tvHistoryName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/history"
+        android:textColor="@color/primary_text"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="10dp"
+        android:textSize="15sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/tvHistoryCaptureDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_timer"
+        android:layout_toEndOf="@+id/tvHistoryName"
+        android:textColor="@color/secondary_text"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="10dp"
+        android:textSize="11sp">
+    </TextView>
+</RelativeLayout>
