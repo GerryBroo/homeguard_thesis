@@ -10,8 +10,8 @@
         android:id="@+id/tvHistoryName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/history"
-        android:textColor="@color/primary_text"
+        android:text="history"
+        android:textColor="@color/white"
         android:layout_centerVertical="true"
         android:layout_marginStart="10dp"
         android:textSize="15sp">
@@ -21,9 +21,9 @@
         android:id="@+id/tvHistoryCaptureDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/default_timer"
+        android:text="time"
         android:layout_toEndOf="@+id/tvHistoryName"
-        android:textColor="@color/secondary_text"
+        android:textColor="@color/white"
         android:layout_centerVertical="true"
         android:layout_marginStart="10dp"
         android:textSize="11sp">

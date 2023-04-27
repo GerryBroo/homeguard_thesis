@@ -11,7 +11,7 @@ class HistoryItemDiskDataSource(
         return dao.getHistoryItems()
     }
 
-    suspend fun insertHistoryItem(historyItem: HistoryItemDisk) {
+    fun insertHistoryItem(historyItem: HistoryItemDisk) {
         dao.insertHistoryItem(historyItem)
     }
 

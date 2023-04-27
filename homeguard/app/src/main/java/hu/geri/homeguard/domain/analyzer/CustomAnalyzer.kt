@@ -17,6 +17,7 @@ import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
 import hu.geri.homeguard.domain.camera.PhotoCapture
+import hu.geri.homeguard.domain.face.FaceManager
 import hu.geri.homeguard.domain.face.util.insertToSP
 import hu.geri.homeguard.domain.face.util.readFromSP
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,8 @@ import java.nio.ByteOrder
 
 class CustomAnalyzer(
     private val context: Context,
-    private val photoCapture: PhotoCapture
+    private val photoCapture: PhotoCapture,
+    private val faceManager: FaceManager
 ) : ImageAnalysis.Analyzer {
 
     private val objectDetector = customObjectDetector("bird_detection.tflite")
@@ -170,6 +172,10 @@ class CustomAnalyzer(
                 if (distance_local < 1.0f) {
                     // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
                     recognizedFace.value = name
+
+                    // SEND TO FACE MANAGER
+                    faceManager.handleFaceDetection(name)
+
                 } else {
                 }
             }
@@ -181,6 +187,7 @@ class CustomAnalyzer(
         // Set the information to add face dialog
         //addFaceData = AddFaceData(bitmap, embeedings, photoCapture.takePhoto())
         addFaceBitmap = bitmap
+
 
 //        faceManager.manageFace(recognitionInfo.text.toString())
     }
