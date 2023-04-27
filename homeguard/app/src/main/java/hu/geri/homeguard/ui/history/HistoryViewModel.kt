@@ -27,7 +27,7 @@ class HistoryViewModel(
 
     fun deleteHistory() {
         viewModelScope.launch {
-            //repository.deleteHistories()
+            useCase.deleteAllHistoryItem()
         }
     }
 }

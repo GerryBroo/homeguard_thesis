@@ -13,6 +13,6 @@ interface HistoryItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertHistoryItem(historyItem: HistoryItemDisk)
 
-    @Delete
-    fun deleteHistoryItem(historyItem: HistoryItemDisk)
+    @Query("DELETE FROM histories")
+    fun deleteAllHistoryItem()
 }

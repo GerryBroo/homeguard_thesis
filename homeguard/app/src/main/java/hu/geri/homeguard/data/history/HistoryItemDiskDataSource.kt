@@ -15,7 +15,7 @@ class HistoryItemDiskDataSource(
         dao.insertHistoryItem(historyItem)
     }
 
-    suspend fun deleteHistoryItem(historyItem: HistoryItemDisk) {
-        dao.deleteHistoryItem(historyItem)
+    fun deleteAllHistoryItem() {
+        dao.deleteAllHistoryItem()
     }
 }

@@ -15,8 +15,7 @@ import java.util.*
 interface HistoryUseCase {
     fun getHistoryItems(): HistoryResult
     fun insertHistoryItem(name: String)
-    fun deleteAllHistoryItem()
-
+    suspend fun deleteAllHistoryItem()
 }
 
 class HistoryUseCaseImpl(
@@ -41,15 +40,17 @@ class HistoryUseCaseImpl(
         }
     }
 
-    override fun deleteAllHistoryItem() {
-        TODO("Not yet implemented")
+    @OptIn(DelicateCoroutinesApi::class)
+    override suspend fun deleteAllHistoryItem() {
+        GlobalScope.launch {
+            dataSource.deleteAllHistoryItem()
+        }
     }
 
     companion object {
         const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
     }
 }
-
 
 sealed interface HistoryResult
 object HistoryItemsEmptyError : HistoryResult
