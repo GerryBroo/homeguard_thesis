@@ -22,4 +22,10 @@
         android:name="hu.geri.homeguard.ui.facegallery.FaceGalleryFragment"
         android:label="@string/title_face_gallery"
         tools:layout="@layout/fragment_face_gallery" />
+
+    <fragment
+        android:id="@+id/navigation_history"
+        android:name="hu.geri.homeguard.ui.history.HistoryFragment"
+        android:label="History"
+        tools:layout="@layout/fragment_history" />
 </navigation>

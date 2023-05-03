@@ -1,30 +1,16 @@
 package hu.geri.homeguard.injection
 
-import android.app.Application
 import androidx.room.Room
-import hu.geri.homeguard.data.face.FaceDao
 import hu.geri.homeguard.data.face.FaceDatabase
 import hu.geri.homeguard.data.face.FaceDiskDataSource
+import hu.geri.homeguard.data.history.HistoryItemDatabase
+import hu.geri.homeguard.data.history.HistoryItemDiskDataSource
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
 val dataModule = module {
 
-    // region Face Database
-//    fun provideFaceDatabase(application: Application): FaceDatabase {
-//        return Room.databaseBuilder(application, FaceDatabase::class.java, "faces")
-//            .fallbackToDestructiveMigration()
-//            .build()
-//    }
-//
-//    fun provideFaceDao(database: FaceDatabase): FaceDao {
-//        return database.faceDao()
-//    }
-//
-//    single { provideFaceDatabase(androidApplication()) }
-//    single { provideFaceDao(get()) }
-//    single { FaceDiskDataSource(get()) }
-
+    // region Face
     single {
         Room.databaseBuilder(
             androidApplication(),
@@ -34,5 +20,17 @@ val dataModule = module {
     }
     single { get<FaceDatabase>().faceDao() }
     single { FaceDiskDataSource(get()) }
+    // endregion
+
+    // region History
+    single {
+        Room.databaseBuilder(
+            androidApplication(),
+            HistoryItemDatabase::class.java,
+            "histories"
+        ).build()
+    }
+    single { get<HistoryItemDatabase>().historyDao() }
+    single { HistoryItemDiskDataSource(get()) }
     // endregion
 }

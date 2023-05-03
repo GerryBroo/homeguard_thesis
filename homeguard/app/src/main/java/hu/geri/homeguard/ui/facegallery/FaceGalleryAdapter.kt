@@ -11,7 +11,7 @@ import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import hu.geri.homeguard.R
 import hu.geri.homeguard.domain.face.model.RecognizedFace
-import kotlinx.android.synthetic.main.facegallery_item.view.*
+import kotlinx.android.synthetic.main.item_facegallery.view.*
 import java.io.File
 
 // TODO REFACTOR AND LAYOUT REFACTOR
@@ -55,7 +55,7 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
         companion object {
             fun create(parent: ViewGroup, onClick: FaceClickListener): GalleryViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.facegallery_item, parent, false)
+                    .inflate(R.layout.item_facegallery, parent, false)
                 return GalleryViewHolder(view, onClick)
             }
         }

@@ -7,13 +7,15 @@ import hu.geri.homeguard.domain.camera.usecase.CameraUseCases
 import hu.geri.homeguard.domain.camera.usecase.GetPreviewUseCase
 import hu.geri.homeguard.domain.camera.usecase.GetRecognizedFaceUseCase
 import hu.geri.homeguard.domain.camera.usecase.GetRecognizedObjectUseCase
+import hu.geri.homeguard.domain.face.FaceManager
 import hu.geri.homeguard.domain.face.FaceUseCase
 import hu.geri.homeguard.domain.face.FaceUseCaseImpl
+import hu.geri.homeguard.domain.history.HistoryUseCase
+import hu.geri.homeguard.domain.history.HistoryUseCaseImpl
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val domainModule = module {
-    single { CustomAnalyzer(androidContext(), get()) }
 
     // region Camera
     single { CameraUseCases(get(), get(), get()) }
@@ -28,8 +30,17 @@ val domainModule = module {
     single { PhotoCapture(androidContext(), get()) }
     // endregion
 
-    // region Face recognition
+    // region Face
     single<FaceUseCase> { FaceUseCaseImpl(androidContext(), get(), get()) }
     single { FaceUseCaseImpl(androidContext(), get(), get()) }
+
+    single { CustomAnalyzer(androidContext(), get(), get()) }
+
+    single { FaceManager(androidContext(), get()) }
+    // endregion
+
+    // region History
+    single<HistoryUseCase> { HistoryUseCaseImpl(get()) }
+    single { HistoryUseCaseImpl(get()) }
     // endregion
 }

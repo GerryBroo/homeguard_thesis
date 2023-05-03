@@ -17,15 +17,15 @@ import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
 import hu.geri.homeguard.domain.camera.PhotoCapture
-import hu.geri.homeguard.domain.face.util.insertToSP
-import hu.geri.homeguard.domain.face.util.readFromSP
+import hu.geri.homeguard.domain.face.FaceManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class CustomAnalyzer(
     private val context: Context,
-    private val photoCapture: PhotoCapture
+    private val photoCapture: PhotoCapture,
+    private val faceManager: FaceManager
 ) : ImageAnalysis.Analyzer {
 
     private val objectDetector = customObjectDetector("bird_detection.tflite")
@@ -34,17 +34,9 @@ class CustomAnalyzer(
     val recognizedObject = MutableStateFlow("Undefined")
     val recognizedFace = MutableStateFlow("Undefined")
 
-    var addFaceData: AddFaceData? = null
-
     var isModelQuantized = false // todo constans
     lateinit var embeedings: Array<FloatArray> // todo szinten nem vagom miert lateinit
-    var registered: HashMap<String?, SimilarityClassifier.Recognition> =
-        HashMap<String?, SimilarityClassifier.Recognition>() // saved Faces
-    lateinit var addFaceBitmap : Bitmap
-
-    init {
-        registered = readFromSP(context)
-    }
+    lateinit var addFaceBitmap: Bitmap
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -109,20 +101,10 @@ class CustomAnalyzer(
         }
     }
 
-    fun setNewFace(name: String, emb: Array<FloatArray>) {
-
-        val result = SimilarityClassifier.Recognition(
-            "0", "", -1f
-        )
-
-        result.extra = emb
-        registered[name] = result
-
-        insertToSP(context, registered)
-    }
-
     // TODO rework because its a spaghetti
     private fun recognizeImage(bitmap: Bitmap) {
+
+        val registered = faceManager.registered
 
         // Create ByteBuffer to store normalized image
         val imgData =
@@ -162,7 +144,7 @@ class CustomAnalyzer(
 
         // Compare new face with saved Faces.
         if (registered.size > 0) {
-            val nearest = findNearest(embeedings[0]) // Find 2 closest matching face
+            val nearest = findNearest(embeedings[0], registered) // Find 2 closest matching face
             if (nearest[0] != null) {
                 val name = nearest[0]!!.first // get name and distance of closest matching face
                 distance_local = nearest[0]!!.second
@@ -170,6 +152,10 @@ class CustomAnalyzer(
                 if (distance_local < 1.0f) {
                     // If distance between Closest found face is more than 1.000 ,then output UNKNOWN face.
                     recognizedFace.value = name
+
+                    // SEND TO FACE MANAGER
+                    faceManager.handleFaceDetection(name)
+
                 } else {
                 }
             }
@@ -182,15 +168,20 @@ class CustomAnalyzer(
         //addFaceData = AddFaceData(bitmap, embeedings, photoCapture.takePhoto())
         addFaceBitmap = bitmap
 
+
 //        faceManager.manageFace(recognitionInfo.text.toString())
     }
 
+    // TODO rethink this
     fun newFaceEvent(): AddFaceData {
         return AddFaceData(addFaceBitmap, embeedings, photoCapture.takePhoto())
     }
 
     // Compare Faces by distance between face embeddings
-    private fun findNearest(emb: FloatArray): List<Pair<String, Float>?> {
+    private fun findNearest(
+        emb: FloatArray,
+        registered: HashMap<String?, SimilarityClassifier.Recognition>
+    ): List<Pair<String, Float>?> {
         val neighbour_list: MutableList<Pair<String, Float>?> = ArrayList()
         var ret: Pair<String, Float>? = null // to get closest match
         var prev_ret: Pair<String, Float>? = null // to get second closest match
