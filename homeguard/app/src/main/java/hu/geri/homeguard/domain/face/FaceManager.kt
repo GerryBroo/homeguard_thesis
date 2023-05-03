@@ -5,6 +5,7 @@ import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.face.util.insertToSP
 import hu.geri.homeguard.domain.face.util.readFromSP
 import hu.geri.homeguard.domain.history.HistoryUseCase
+import hu.geri.homeguard.domain.history.model.CapturedFace
 
 class FaceManager(
     private val context: Context,
@@ -13,14 +14,43 @@ class FaceManager(
     var registered: HashMap<String?, SimilarityClassifier.Recognition> =
         HashMap<String?, SimilarityClassifier.Recognition>()
 
+    private val capturedFaces: MutableList<CapturedFace> = mutableListOf()
+
     init {
         registered = readFromSP(context)
     }
 
-    fun handleFaceDetection(name: String) {
-        // TODO handle face history
+    private fun isFaceInCapturedFace(name: String): Boolean {
+        capturedFaces.forEach { face ->
+            if (face.name == name) {
+                return true
+            }
+        }
+        return false
+    }
 
-        historyUsaCase.insertHistoryItem(name)
+    fun handleFaceDetection(name: String) {
+        if (!isFaceInCapturedFace(name)) {
+            val face = CapturedFace(name)
+            face.startOnScreenTimer()
+            capturedFaces.add(face)
+        }
+
+        capturedFaces.forEach { face ->
+            if (face.isDetectable) {
+                face.isOnScreen = face.name == name
+            }
+
+            if (face.isDetected) {
+                historyUsaCase.insertHistoryItem(face.name)
+                face.startCaptureTimer()
+                face.isDetected = false
+            }
+
+            if (face.isDeletable) {
+                capturedFaces.remove(face)
+            }
+        }
     }
 
     fun setNewFace(name: String, emb: Array<FloatArray>) {

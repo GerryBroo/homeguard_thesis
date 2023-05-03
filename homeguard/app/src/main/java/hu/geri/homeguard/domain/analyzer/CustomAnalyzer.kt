@@ -172,6 +172,7 @@ class CustomAnalyzer(
 //        faceManager.manageFace(recognitionInfo.text.toString())
     }
 
+    // TODO rethink this
     fun newFaceEvent(): AddFaceData {
         return AddFaceData(addFaceBitmap, embeedings, photoCapture.takePhoto())
     }
