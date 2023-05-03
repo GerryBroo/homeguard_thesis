@@ -68,22 +68,12 @@ dependencies {
     def faceDetectionVersion = "16.1.5"
     implementation "com.google.mlkit:face-detection:${faceDetectionVersion}"
 
-//    // TF LITE
-//    def tensorflowLiteVersion = "0.4.0"
-//    implementation "org.tensorflow:tensorflow-lite-task-vision:${tensorflowLiteVersion}"
-//    implementation "org.tensorflow:tensorflow-lite-gpu-delegate-plugin:${tensorflowLiteVersion}"
-//    implementation 'org.tensorflow:tensorflow-lite-gpu:2.9.0'
-
     // TFLITE
     implementation "org.tensorflow:tensorflow-lite:2.4.0"
-//    implementation "org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly"
-//    implementation "org.tensorflow:tensorflow-lite-support:0.0.0-nightly"
-
 
     // KOIN
     def koinVersion = "3.3.0"
     implementation "io.insert-koin:koin-android:${koinVersion}"
-//    implementation "io.insert-koin:koin-core:${koinVersion}"
 
     // ROOM
     def room_version = "2.4.2"
