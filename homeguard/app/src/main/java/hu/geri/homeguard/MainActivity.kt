@@ -45,6 +45,8 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        supportActionBar?.hide()
+
         // Load model
         try {
             tfLiteFace = Interpreter(loadModelFile(this@MainActivity, "mobile_face_net.tflite"))
