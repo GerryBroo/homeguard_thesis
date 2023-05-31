@@ -31,9 +31,9 @@
             android:id="@+id/btnAddFace"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#FFF"
+            android:background="@null"
             android:layout_weight="1"
-            android:src="@drawable/ic_home_black_24dp" />
+            android:src="@drawable/ic_add" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

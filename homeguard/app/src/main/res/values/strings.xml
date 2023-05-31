@@ -13,6 +13,9 @@
 
     <!-- region Face Gallery -->
     <string name="title_face_gallery">Face Gallery</string>
+    <string name="face_gallery_item">Face</string>
+    <string name="face_gallery_item_date">Face</string>
+    <string name="face_gallery_item_delete">Delete</string>
     <!-- endregion -->
 
     <!-- region Add face dialog -->
