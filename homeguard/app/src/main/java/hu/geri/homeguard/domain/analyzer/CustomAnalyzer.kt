@@ -28,7 +28,7 @@ class CustomAnalyzer(
     private val faceManager: FaceManager
 ) : ImageAnalysis.Analyzer {
 
-    private val objectDetector = customObjectDetector("bird_detection.tflite")
+    private val objectDetector = customObjectDetector("modeltest8.tflite")
     private val faceDetector = customFaceDetector()
 
     val recognizedObject = MutableStateFlow("Undefined")
