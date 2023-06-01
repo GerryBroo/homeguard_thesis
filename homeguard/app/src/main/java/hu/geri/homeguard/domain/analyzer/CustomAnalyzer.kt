@@ -18,14 +18,16 @@ import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
 import hu.geri.homeguard.domain.camera.PhotoCapture
 import hu.geri.homeguard.domain.face.FaceManager
+import hu.geri.homeguard.domain.history.HistoryUseCase
+import hu.geri.homeguard.domain.truck.TruckUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class CustomAnalyzer(
-    private val context: Context,
     private val photoCapture: PhotoCapture,
-    private val faceManager: FaceManager
+    private val faceManager: FaceManager,
+    private val truckUseCase: TruckUseCase
 ) : ImageAnalysis.Analyzer {
 
     private val objectDetector = customObjectDetector("modeltest8.tflite")
@@ -80,7 +82,13 @@ class CustomAnalyzer(
 
     private fun processObjects(objects: List<DetectedObject>) {
         for (detectedObject in objects) {
-            recognizedObject.value = detectedObject.labels.firstOrNull()?.text ?: "Undefined"
+            if(detectedObject.labels.firstOrNull()?.text == "truck") {
+                recognizedObject.value = "Garbage truck detected"
+                truckUseCase.handleTruckDetection()
+            }
+            else {
+                recognizedObject.value = "Undefined"
+            }
         }
     }
 

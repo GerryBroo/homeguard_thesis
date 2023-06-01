@@ -1,6 +1,7 @@
 package hu.geri.homeguard.data.history
 
 import hu.geri.homeguard.data.history.model.HistoryItemDisk
+import hu.geri.homeguard.domain.history.model.HistoryItem
 import kotlinx.coroutines.flow.Flow
 
 class HistoryItemDiskDataSource(
@@ -9,6 +10,10 @@ class HistoryItemDiskDataSource(
 
     fun getHistoryItems(): Flow<List<HistoryItemDisk>> {
         return dao.getHistoryItems()
+    }
+
+    fun getLatestTruck(): HistoryItem? {
+        return dao.getLatestTruck()
     }
 
     fun insertHistoryItem(historyItem: HistoryItemDisk) {
