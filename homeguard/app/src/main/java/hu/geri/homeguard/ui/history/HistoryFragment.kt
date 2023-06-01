@@ -60,7 +60,7 @@ class HistoryFragment : Fragment(),
     }
 
     override fun onDialogSubmit() {
-
+        viewModel.savePostman()
     }
 
     override fun onBitmapLoaded(bitmap: Bitmap) {
@@ -68,5 +68,5 @@ class HistoryFragment : Fragment(),
         dialogFragment.show(childFragmentManager, "SET_POSTMAN_DIALOG")
     }
 
-    override fun onBitmapLoadError() { }
+    override fun onBitmapLoadError() {}
 }

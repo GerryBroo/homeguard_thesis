@@ -1,6 +1,5 @@
 package hu.geri.homeguard.ui.history
 
-import android.content.DialogInterface
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -30,6 +29,7 @@ class SetPostmanDialog(
 
         rootView.setPostmanDialogSubmitBtn.setOnClickListener {
             listener.onDialogSubmit()
+            dismiss()
         }
 
         return rootView
