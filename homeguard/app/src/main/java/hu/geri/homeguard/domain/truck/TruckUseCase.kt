@@ -50,7 +50,8 @@ class TruckUseCaseImpl(
     override fun handleTruckDetection() {
         if (truckDetectionIsEnable) {
             checkIfDetectionIsEnable()
-            historyUseCase.insertHistoryItem("truck")
+            //historyUseCase.insertTruckHistoryItem("truck", HistoryEnum.TRUCK)
+            historyUseCase.insertTruckHistoryItem()
         }
     }
 

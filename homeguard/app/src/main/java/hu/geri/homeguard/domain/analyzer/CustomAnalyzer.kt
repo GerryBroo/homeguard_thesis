@@ -1,7 +1,6 @@
 package hu.geri.homeguard.domain.analyzer
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.media.Image
@@ -18,7 +17,6 @@ import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
 import hu.geri.homeguard.domain.camera.PhotoCapture
 import hu.geri.homeguard.domain.face.FaceManager
-import hu.geri.homeguard.domain.history.HistoryUseCase
 import hu.geri.homeguard.domain.truck.TruckUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.nio.ByteBuffer
@@ -150,6 +148,8 @@ class CustomAnalyzer(
         val id = "0"
         val label = "?"
 
+        addFaceBitmap = bitmap
+
         // Compare new face with saved Faces.
         if (registered.size > 0) {
             val nearest = findNearest(embeedings[0], registered) // Find 2 closest matching face
@@ -162,22 +162,16 @@ class CustomAnalyzer(
                     recognizedFace.value = name
 
                     // SEND TO FACE MANAGER
-                    faceManager.handleFaceDetection(name)
+                    faceManager.handleFaceDetection(name, addFaceBitmap, embeedings)
 
                 } else {
                 }
             }
         } else {
             recognizedFace.value = "Unknown"
-
+            // SEND TO FACE MANAGER
+            faceManager.handleFaceDetection("Unknown", addFaceBitmap, embeedings)
         }
-
-        // Set the information to add face dialog
-        //addFaceData = AddFaceData(bitmap, embeedings, photoCapture.takePhoto())
-        addFaceBitmap = bitmap
-
-
-//        faceManager.manageFace(recognitionInfo.text.toString())
     }
 
     // TODO rethink this

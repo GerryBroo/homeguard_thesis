@@ -28,7 +28,7 @@ val dataModule = module {
             androidApplication(),
             HistoryItemDatabase::class.java,
             "histories"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
     single { get<HistoryItemDatabase>().historyDao() }
     single { HistoryItemDiskDataSource(get()) }

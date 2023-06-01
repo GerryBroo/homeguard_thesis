@@ -1,6 +1,8 @@
 package hu.geri.homeguard.domain.face
 
 import android.content.Context
+import android.graphics.Bitmap
+import hu.geri.homeguard.data.history.model.HistoryEnum
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.face.util.insertToSP
 import hu.geri.homeguard.domain.face.util.readFromSP
@@ -29,7 +31,7 @@ class FaceManager(
         return false
     }
 
-    fun handleFaceDetection(name: String) {
+    fun handleFaceDetection(name: String, addFaceBitmap: Bitmap, embeedings: Array<FloatArray>) {
         if (!isFaceInCapturedFace(name)) {
             val face = CapturedFace(name)
             face.startOnScreenTimer()
@@ -42,7 +44,7 @@ class FaceManager(
             }
 
             if (face.isDetected) {
-                historyUsaCase.insertHistoryItem(face.name)
+                historyUsaCase.insertFaceHistoryItem(face.name, addFaceBitmap, embeedings, HistoryEnum.FACE)
                 face.startCaptureTimer()
                 face.isDetected = false
             }
