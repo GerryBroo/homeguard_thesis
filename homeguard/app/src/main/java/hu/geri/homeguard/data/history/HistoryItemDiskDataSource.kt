@@ -12,6 +12,10 @@ class HistoryItemDiskDataSource(
         return dao.getHistoryItems()
     }
 
+    suspend fun getHistoryById(id: Int): HistoryItemDisk? {
+        return dao.getHistoryById(id)
+    }
+
     fun getLatestTruck(): HistoryItem? {
         return dao.getLatestTruck()
     }

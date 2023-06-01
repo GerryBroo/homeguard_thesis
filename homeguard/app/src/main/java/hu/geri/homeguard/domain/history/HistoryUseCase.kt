@@ -16,6 +16,7 @@ import java.util.*
 
 interface HistoryUseCase {
     fun getHistoryItems(): HistoryResult
+    suspend fun getHistoryItemById(id: Int): HistoryItemDisk?
     fun insertFaceHistoryItem(
         name: String,
         bitmap: Bitmap,
@@ -37,6 +38,10 @@ class HistoryUseCaseImpl(
         return HistoryItemsSuccess(result.map { flow ->
             flow.toHistoryItems()
         })
+    }
+
+    override suspend fun getHistoryItemById(id: Int): HistoryItemDisk? {
+        return dataSource.getHistoryById(id)
     }
 
     @OptIn(DelicateCoroutinesApi::class)

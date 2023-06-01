@@ -3,24 +3,26 @@ package hu.geri.homeguard.ui.history
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import hu.geri.homeguard.R
 import hu.geri.homeguard.domain.history.model.HistoryItem
+import kotlinx.android.synthetic.main.item_facegallery.view.*
 import kotlinx.android.synthetic.main.item_history.view.*
 
-class HistoryListAdapter() :
+class HistoryListAdapter(
+    private val onClick: HistoryOnClickListener
+) :
     ListAdapter<HistoryItem, HistoryListAdapter.HistoryViewHolder>(HistoryComparator) {
-
-    val listener: Listener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
         val view = LayoutInflater
             .from(parent.context)
             .inflate(R.layout.item_history, parent, false)
-        return HistoryViewHolder(view)
+        return HistoryViewHolder(view, onClick)
     }
 
     override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
@@ -30,17 +32,22 @@ class HistoryListAdapter() :
 
         holder.nameText.text = item.name
         holder.captureDateText.text = item.captureDate
+        holder.imgFace.setImageBitmap(item.bitmap)
     }
 
-    inner class HistoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class HistoryViewHolder(
+        itemView: View,
+        private val onClick: HistoryOnClickListener
+    ) : RecyclerView.ViewHolder(itemView) {
         val nameText: TextView = itemView.tvHistoryName
         val captureDateText: TextView = itemView.tvHistoryCaptureDate
+        val imgFace: ImageView = itemView.imgHistory
 
         var item: HistoryItem? = null
 
         init {
             itemView.setOnClickListener {
-                item?.let { item -> listener?.onItemSelected(item.id) }
+                item?.let { item -> onClick.onClick(item.id) }
             }
         }
     }
@@ -55,7 +62,7 @@ class HistoryListAdapter() :
         }
     }
 
-    interface Listener {
-        fun onItemSelected(historyId: Long)
+    interface HistoryOnClickListener {
+        fun onClick(historyId: Long)
     }
 }
