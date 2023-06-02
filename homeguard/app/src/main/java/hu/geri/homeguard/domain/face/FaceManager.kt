@@ -44,7 +44,9 @@ class FaceManager(
             }
 
             if (face.isDetected) {
-                historyUsaCase.insertHistoryItem(face.name, addFaceBitmap, embeedings, HistoryEnum.FACE)
+                val historyType =
+                    if (face.name == "Unknown") HistoryEnum.UNKNOWN_FACE else HistoryEnum.FACE
+                historyUsaCase.insertHistoryItem(face.name, addFaceBitmap, embeedings, historyType)
                 face.startCaptureTimer()
                 face.isDetected = false
             }

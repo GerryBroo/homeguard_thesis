@@ -14,7 +14,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.io.Closeable
 
 class AddFaceViewModel(
     private val cameraUseCases: CameraUseCases,
@@ -45,7 +44,8 @@ class AddFaceViewModel(
             newFaceData = AddFaceData(
                 faceData.bitmap,
                 faceData.embeedings,
-                faceData.url
+                faceData.url,
+                faceData.type
             )
         }
         return newFaceData.bitmap

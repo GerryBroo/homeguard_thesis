@@ -27,7 +27,7 @@ data class HistoryItemDisk(
     val embeedings: Array<FloatArray>,
 
     @ColumnInfo(name = "historyType")
-    val yourEnum: HistoryEnum
+    val type: HistoryEnum
 )
 
 @TypeConverters(EnumConverter::class)

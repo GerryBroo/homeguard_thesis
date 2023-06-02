@@ -12,6 +12,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.objects.DetectedObject
 import hu.geri.homeguard.MainActivity
+import hu.geri.homeguard.data.history.model.HistoryEnum
 import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
@@ -176,7 +177,7 @@ class CustomAnalyzer(
 
     // TODO rethink this
     fun newFaceEvent(): AddFaceData {
-        return AddFaceData(addFaceBitmap, embeedings, photoCapture.takePhoto())
+        return AddFaceData(addFaceBitmap, embeedings, photoCapture.takePhoto(), HistoryEnum.UNKNOWN_FACE)
     }
 
     // Compare Faces by distance between face embeddings

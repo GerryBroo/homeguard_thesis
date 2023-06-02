@@ -24,6 +24,11 @@
     <string name="add_face_dialog_submit">Submit</string>
     <!-- endregion -->
 
+    <!-- region History -->
+    <string name="history_title">History</string>
+    <string name="history_buttom_description">Delete</string>
+    <!-- endregion -->
+
     <!-- region Set postman dialog -->
     <string name="set_postman_dialog_question">Would you like to set her/him to a postman?</string>
     <!-- endregion -->
