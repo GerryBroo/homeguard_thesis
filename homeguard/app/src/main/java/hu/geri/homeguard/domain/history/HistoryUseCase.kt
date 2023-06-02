@@ -17,13 +17,12 @@ import java.util.*
 interface HistoryUseCase {
     fun getHistoryItems(): HistoryResult
     suspend fun getHistoryItemById(id: Int): HistoryItemDisk?
-    fun insertFaceHistoryItem(
+    fun insertHistoryItem(
         name: String,
         bitmap: Bitmap,
         embeedings: Array<FloatArray>,
         type: HistoryEnum
     )
-    fun insertTruckHistoryItem()
     suspend fun deleteAllHistoryItem()
 }
 
@@ -45,7 +44,7 @@ class HistoryUseCaseImpl(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    override fun insertFaceHistoryItem(
+    override fun insertHistoryItem(
         name: String,
         bitmap: Bitmap,
         embeedings: Array<FloatArray>,
@@ -56,10 +55,6 @@ class HistoryUseCaseImpl(
                 SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
             dataSource.insertHistoryItem(HistoryItemDisk(0, name, date, bitmap, embeedings, type))
         }
-    }
-
-    override fun insertTruckHistoryItem() {
-
     }
 
     @OptIn(DelicateCoroutinesApi::class)

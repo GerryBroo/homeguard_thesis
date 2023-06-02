@@ -44,7 +44,7 @@ class FaceManager(
             }
 
             if (face.isDetected) {
-                historyUsaCase.insertFaceHistoryItem(face.name, addFaceBitmap, embeedings, HistoryEnum.FACE)
+                historyUsaCase.insertHistoryItem(face.name, addFaceBitmap, embeedings, HistoryEnum.FACE)
                 face.startCaptureTimer()
                 face.isDetected = false
             }

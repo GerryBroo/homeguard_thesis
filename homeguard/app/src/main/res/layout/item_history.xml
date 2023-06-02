@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="history"
-        android:textColor="@color/white"
+        android:textColor="?android:textColorPrimary"
         android:layout_centerVertical="true"
         android:layout_marginStart="10dp"
         android:textSize="15sp">
@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:text="time"
         android:layout_toEndOf="@+id/tvHistoryName"
-        android:textColor="@color/white"
+        android:textColor="?android:textColorPrimary"
         android:layout_centerVertical="true"
         android:layout_marginStart="10dp"
         android:textSize="11sp">

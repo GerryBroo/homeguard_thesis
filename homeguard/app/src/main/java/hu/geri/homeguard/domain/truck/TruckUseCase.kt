@@ -1,7 +1,9 @@
 package hu.geri.homeguard.domain.truck
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import hu.geri.homeguard.data.history.HistoryItemDiskDataSource
+import hu.geri.homeguard.data.history.model.HistoryEnum
 import hu.geri.homeguard.domain.history.HistoryUseCase
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -10,7 +12,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 interface TruckUseCase {
-    fun handleTruckDetection()
+    fun handleTruckDetection(
+        bitmap: Bitmap,
+        embeedings: Array<FloatArray>
+    )
 }
 
 @SuppressLint("SimpleDateFormat")
@@ -47,11 +52,10 @@ class TruckUseCaseImpl(
         }
     }
 
-    override fun handleTruckDetection() {
+    override fun handleTruckDetection(bitmap: Bitmap, embeedings: Array<FloatArray>) {
         if (truckDetectionIsEnable) {
             checkIfDetectionIsEnable()
-            //historyUseCase.insertTruckHistoryItem("truck", HistoryEnum.TRUCK)
-            historyUseCase.insertTruckHistoryItem()
+            historyUseCase.insertHistoryItem("truck", bitmap, embeedings, HistoryEnum.TRUCK)
         }
     }
 

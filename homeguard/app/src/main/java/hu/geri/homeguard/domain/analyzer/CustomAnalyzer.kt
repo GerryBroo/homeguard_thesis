@@ -82,7 +82,7 @@ class CustomAnalyzer(
         for (detectedObject in objects) {
             if(detectedObject.labels.firstOrNull()?.text == "truck") {
                 recognizedObject.value = "Garbage truck detected"
-                truckUseCase.handleTruckDetection()
+                truckUseCase.handleTruckDetection(addFaceBitmap, embeedings)
             }
             else {
                 recognizedObject.value = "Undefined"
