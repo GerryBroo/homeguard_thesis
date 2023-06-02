@@ -35,27 +35,20 @@ class TruckUseCaseImpl(
         GlobalScope.launch {
             val result = historyDataSource.getLatestTruck()
             if (result != null) {
-                val day = SimpleDateFormat(
-                    DAY_FORMAT
-                ).format(System.currentTimeMillis())
+                val day = SimpleDateFormat(DAY_FORMAT).format(System.currentTimeMillis())
 
                 val date = SimpleDateFormat(FILENAME_FORMAT).parse(result.captureDate)
-                val resultDay = date?.let {
-                    SimpleDateFormat(
-                        DAY_FORMAT
-                    ).format(it)
-                }
-                if (day == resultDay) {
-                    truckDetectionIsEnable = false
-                }
+                val resultDay = date?.let { SimpleDateFormat(DAY_FORMAT).format(it) }
+
+                truckDetectionIsEnable = day != resultDay
             }
         }
     }
 
     override fun handleTruckDetection(bitmap: Bitmap, embeedings: Array<FloatArray>) {
         if (truckDetectionIsEnable) {
-            checkIfDetectionIsEnable()
             historyUseCase.insertHistoryItem("truck", bitmap, embeedings, HistoryEnum.TRUCK)
+            truckDetectionIsEnable = false
         }
     }
 
