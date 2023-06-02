@@ -66,10 +66,10 @@ class ModelSpecificInfo(object):
 _MODEL_INFO = {
     "modeltest8.tflite":
         ModelSpecificInfo(
-            name="MobileNetV1 image classifier",
+            name="Object Detection for Garbagetrucks",
             version="v1",
-            image_width=160,
-            image_height=160,
+            image_width=224,
+            image_height=224,
             image_min=0,
             image_max=255,
             mean=[127.5],

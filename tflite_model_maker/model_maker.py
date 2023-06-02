@@ -35,7 +35,7 @@ predictions = Dense(num_classes, activation='softmax')(x)
 model = Model(inputs=base_model.input, outputs=predictions)
 
 # Compile the model
-model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
 # Train the model
 model.fit(train_generator, epochs=10)
@@ -49,5 +49,5 @@ converter.experimental_new_converter = True
 tflite_model = converter.convert()
 
 # Save the TensorFlow Lite model to a file
-with open('homeguard_detection.tflite', 'wb') as f:
+with open('modeltest8.tflite', 'wb') as f:
     f.write(tflite_model)
