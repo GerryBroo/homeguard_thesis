@@ -40,7 +40,6 @@ class HistoryViewModel(
                 faceData = AddFaceData(
                     historyData.bitmap,
                     historyData.embeedings,
-                    "",
                     historyData.type
                 )
                 if (faceData.bitmap != null) {
@@ -54,7 +53,9 @@ class HistoryViewModel(
 
     fun savePostman() {
         viewModelScope.launch(Dispatchers.IO) {
-            faceData.embeedings?.let { faceUseCase.saveFace("Postman", it, "") }
+            faceData.apply {
+                faceUseCase.saveFace("Postman", bitmap!!, embeedings!!)
+            }
         }
     }
 

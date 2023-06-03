@@ -1,5 +1,6 @@
 package hu.geri.homeguard.ui.facegallery
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -33,6 +34,8 @@ class FaceGalleryViewModel(
             when (val result = faceUseCase.getFaces()) {
                 is FacesSuccess -> {
                     _uiState.update { currentUiState ->
+                        Log.d("asdasd", result.face.toString())
+
                         currentUiState.copy(isLoading = false, faces = result.face)
                     }
                 }

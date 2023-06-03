@@ -177,7 +177,7 @@ class CustomAnalyzer(
 
     // TODO rethink this
     fun newFaceEvent(): AddFaceData {
-        return AddFaceData(addFaceBitmap, embeedings, photoCapture.takePhoto(), HistoryEnum.UNKNOWN_FACE)
+        return AddFaceData(addFaceBitmap, embeedings, HistoryEnum.UNKNOWN_FACE)
     }
 
     // Compare Faces by distance between face embeddings

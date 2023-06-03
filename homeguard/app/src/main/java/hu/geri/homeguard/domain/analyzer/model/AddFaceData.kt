@@ -6,7 +6,6 @@ import hu.geri.homeguard.data.history.model.HistoryEnum
 data class AddFaceData(
     var bitmap: Bitmap? = null,
     var embeedings: Array<FloatArray>? = null,
-    var url: String = "",
     var type: HistoryEnum
 ) {
     override fun equals(other: Any?): Boolean {

@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.camera.usecase.CameraUseCases
 import hu.geri.homeguard.domain.face.FaceUseCase
-import hu.geri.homeguard.domain.face.util.deleteFaceImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -44,7 +43,6 @@ class AddFaceViewModel(
             newFaceData = AddFaceData(
                 faceData.bitmap,
                 faceData.embeedings,
-                faceData.url,
                 faceData.type
             )
         }
@@ -53,12 +51,10 @@ class AddFaceViewModel(
 
     fun setNewFace(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            newFaceData.embeedings?.let { faceUseCase.saveFace(name, it, newFaceData.url) }
+            newFaceData.apply {
+                faceUseCase.saveFace(name, bitmap!!, embeedings!!)
+            }
         }
-    }
-
-    fun cancelFaceImage() {
-        deleteFaceImage(newFaceData.url)
     }
 
     // IMPORTANT TO BE ON THE BOTTOM, BECAUSE OF THE INIT FLOW

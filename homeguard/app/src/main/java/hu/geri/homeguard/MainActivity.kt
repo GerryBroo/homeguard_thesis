@@ -1,8 +1,11 @@
 package hu.geri.homeguard
 
+import android.Manifest
 import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -23,6 +26,17 @@ class MainActivity : AppCompatActivity() {
     companion object LoadFile {
         lateinit var tfLiteFace: Interpreter
         lateinit var outputFileUri: String
+
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS =
+            mutableListOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
+            ).apply {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }.toTypedArray()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +69,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         outputFileUri = getOutputDirectory()
+
+
+        ActivityCompat.requestPermissions(
+            this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+        )
     }
 
     // TODO refactor spaghetti
