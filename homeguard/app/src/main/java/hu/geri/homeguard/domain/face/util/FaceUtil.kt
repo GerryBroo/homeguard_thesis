@@ -5,12 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
-import java.io.File
-
-fun deleteFaceImage(url: String) {
-    val file = File(url)
-    file.delete()
-}
 
 //Save Faces to Shared Preferences.Conversion of Recognition objects to json string
 fun insertToSP(

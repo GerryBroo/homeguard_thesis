@@ -22,7 +22,7 @@
             android:id="@+id/tvHistory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="History"
+            android:text="@string/history_title"
             android:layout_weight="1"
             android:textSize="40sp"
             android:textStyle="bold" />
@@ -31,11 +31,10 @@
             android:id="@+id/btnDeleteHistory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#FFF"
+            android:background="?android:colorPrimary"
             android:layout_weight="1"
-            android:contentDescription="Delete"
+            android:contentDescription="@string/history_buttom_description"
             android:src="@drawable/ic_delete" />
-
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

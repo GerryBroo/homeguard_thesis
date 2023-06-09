@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import hu.geri.homeguard.databinding.FragmentHomeBinding
+import hu.geri.homeguard.domain.face.util.deleteFromSP
 
 class HomeFragment : Fragment() {
 
@@ -32,6 +33,9 @@ class HomeFragment : Fragment() {
         homeViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
+
+        deleteFromSP(requireContext(),"Postman")
+
         return root
     }
 

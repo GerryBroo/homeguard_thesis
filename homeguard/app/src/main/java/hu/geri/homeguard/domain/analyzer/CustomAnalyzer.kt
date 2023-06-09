@@ -1,7 +1,6 @@
 package hu.geri.homeguard.domain.analyzer
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.media.Image
@@ -13,22 +12,24 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.objects.DetectedObject
 import hu.geri.homeguard.MainActivity
+import hu.geri.homeguard.data.history.model.HistoryEnum
 import hu.geri.homeguard.domain.analyzer.model.AddFaceData
 import hu.geri.homeguard.domain.analyzer.model.SimilarityClassifier
 import hu.geri.homeguard.domain.analyzer.util.*
 import hu.geri.homeguard.domain.camera.PhotoCapture
 import hu.geri.homeguard.domain.face.FaceManager
+import hu.geri.homeguard.domain.truck.TruckUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class CustomAnalyzer(
-    private val context: Context,
     private val photoCapture: PhotoCapture,
-    private val faceManager: FaceManager
+    private val faceManager: FaceManager,
+    private val truckUseCase: TruckUseCase
 ) : ImageAnalysis.Analyzer {
 
-    private val objectDetector = customObjectDetector("bird_detection.tflite")
+    private val objectDetector = customObjectDetector("modeltest8.tflite")
     private val faceDetector = customFaceDetector()
 
     val recognizedObject = MutableStateFlow("Undefined")
@@ -80,7 +81,13 @@ class CustomAnalyzer(
 
     private fun processObjects(objects: List<DetectedObject>) {
         for (detectedObject in objects) {
-            recognizedObject.value = detectedObject.labels.firstOrNull()?.text ?: "Undefined"
+            if(detectedObject.labels.firstOrNull()?.text == "truck") {
+                recognizedObject.value = "Garbage truck detected"
+                truckUseCase.handleTruckDetection(addFaceBitmap, embeedings)
+            }
+            else {
+                recognizedObject.value = "Undefined"
+            }
         }
     }
 
@@ -142,6 +149,8 @@ class CustomAnalyzer(
         val id = "0"
         val label = "?"
 
+        addFaceBitmap = bitmap
+
         // Compare new face with saved Faces.
         if (registered.size > 0) {
             val nearest = findNearest(embeedings[0], registered) // Find 2 closest matching face
@@ -154,27 +163,21 @@ class CustomAnalyzer(
                     recognizedFace.value = name
 
                     // SEND TO FACE MANAGER
-                    faceManager.handleFaceDetection(name)
+                    faceManager.handleFaceDetection(name, addFaceBitmap, embeedings)
 
                 } else {
                 }
             }
         } else {
             recognizedFace.value = "Unknown"
-
+            // SEND TO FACE MANAGER
+            faceManager.handleFaceDetection("Unknown", addFaceBitmap, embeedings)
         }
-
-        // Set the information to add face dialog
-        //addFaceData = AddFaceData(bitmap, embeedings, photoCapture.takePhoto())
-        addFaceBitmap = bitmap
-
-
-//        faceManager.manageFace(recognitionInfo.text.toString())
     }
 
     // TODO rethink this
     fun newFaceEvent(): AddFaceData {
-        return AddFaceData(addFaceBitmap, embeedings, photoCapture.takePhoto())
+        return AddFaceData(addFaceBitmap, embeedings, HistoryEnum.UNKNOWN_FACE)
     }
 
     // Compare Faces by distance between face embeddings

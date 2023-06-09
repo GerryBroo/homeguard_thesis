@@ -1,5 +1,6 @@
 package hu.geri.homeguard.data.face.model
 
+import android.graphics.Bitmap
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -17,8 +18,8 @@ data class RecognizedFaceDisk(
     @ColumnInfo(name = "capture_date")
     var captureDate: String,
 
-    @ColumnInfo(name = "face_url")
-    var faceUrl: String,
+    @ColumnInfo(name = "face_bitmap")
+    var bitmap: Bitmap,
 )
 
 fun RecognizedFace.toRecognizedFaceDisk() =
@@ -26,5 +27,5 @@ fun RecognizedFace.toRecognizedFaceDisk() =
         id = id,
         name = name,
         captureDate = captureDate,
-        faceUrl = faceUrl
+        bitmap = bitmap
     )

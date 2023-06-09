@@ -16,7 +16,7 @@ val dataModule = module {
             androidApplication(),
             FaceDatabase::class.java,
             "faces"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
     single { get<FaceDatabase>().faceDao() }
     single { FaceDiskDataSource(get()) }
@@ -28,7 +28,7 @@ val dataModule = module {
             androidApplication(),
             HistoryItemDatabase::class.java,
             "histories"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
     single { get<HistoryItemDatabase>().historyDao() }
     single { HistoryItemDiskDataSource(get()) }

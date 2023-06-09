@@ -11,5 +11,5 @@ val viewModelModule = module {
     viewModel { CameraViewModel(get()) }
     viewModel { FaceGalleryViewModel(get()) }
     viewModel { AddFaceViewModel(get(), get()) }
-    viewModel { HistoryViewModel(get()) }
+    viewModel { HistoryViewModel(get(), get()) }
 }

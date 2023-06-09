@@ -12,6 +12,8 @@ import hu.geri.homeguard.domain.face.FaceUseCase
 import hu.geri.homeguard.domain.face.FaceUseCaseImpl
 import hu.geri.homeguard.domain.history.HistoryUseCase
 import hu.geri.homeguard.domain.history.HistoryUseCaseImpl
+import hu.geri.homeguard.domain.truck.TruckUseCase
+import hu.geri.homeguard.domain.truck.TruckUseCaseImpl
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -34,7 +36,7 @@ val domainModule = module {
     single<FaceUseCase> { FaceUseCaseImpl(androidContext(), get(), get()) }
     single { FaceUseCaseImpl(androidContext(), get(), get()) }
 
-    single { CustomAnalyzer(androidContext(), get(), get()) }
+    single { CustomAnalyzer(get(), get(), get()) }
 
     single { FaceManager(androidContext(), get()) }
     // endregion
@@ -42,5 +44,8 @@ val domainModule = module {
     // region History
     single<HistoryUseCase> { HistoryUseCaseImpl(get()) }
     single { HistoryUseCaseImpl(get()) }
+
+    single<TruckUseCase> { TruckUseCaseImpl(get(), get()) }
+    single { TruckUseCaseImpl(get(), get()) }
     // endregion
 }

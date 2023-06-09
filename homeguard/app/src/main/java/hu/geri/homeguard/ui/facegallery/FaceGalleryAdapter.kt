@@ -7,12 +7,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import hu.geri.homeguard.R
 import hu.geri.homeguard.domain.face.model.RecognizedFace
 import kotlinx.android.synthetic.main.item_facegallery.view.*
-import java.io.File
 
 // TODO REFACTOR AND LAYOUT REFACTOR
 
@@ -40,8 +38,7 @@ class FaceGalleryAdapter(private val onClick: FaceClickListener) :
             tvFaceName.text = face.name
             tvFaceCaptureDate.text = face.captureDate
 
-            val imgFile = File(face.faceUrl)
-            Picasso.get().load(imgFile).into(imgFace)
+            imgFace.setImageBitmap(face.bitmap)
 
             itemView.setOnClickListener {
                 onClick.onClick(face.id)

@@ -1,6 +1,8 @@
 package hu.geri.homeguard.domain.history
 
+import android.graphics.Bitmap
 import hu.geri.homeguard.data.history.HistoryItemDiskDataSource
+import hu.geri.homeguard.data.history.model.HistoryEnum
 import hu.geri.homeguard.data.history.model.HistoryItemDisk
 import hu.geri.homeguard.domain.history.model.HistoryItem
 import hu.geri.homeguard.domain.history.model.toHistoryItems
@@ -14,7 +16,13 @@ import java.util.*
 
 interface HistoryUseCase {
     fun getHistoryItems(): HistoryResult
-    fun insertHistoryItem(name: String)
+    suspend fun getHistoryItemById(id: Int): HistoryItemDisk?
+    fun insertHistoryItem(
+        name: String,
+        bitmap: Bitmap,
+        embeedings: Array<FloatArray>,
+        type: HistoryEnum
+    )
     suspend fun deleteAllHistoryItem()
 }
 
@@ -31,12 +39,21 @@ class HistoryUseCaseImpl(
         })
     }
 
+    override suspend fun getHistoryItemById(id: Int): HistoryItemDisk? {
+        return dataSource.getHistoryById(id)
+    }
+
     @OptIn(DelicateCoroutinesApi::class)
-    override fun insertHistoryItem(name: String) {
+    override fun insertHistoryItem(
+        name: String,
+        bitmap: Bitmap,
+        embeedings: Array<FloatArray>,
+        type: HistoryEnum
+    ) {
         GlobalScope.launch {
             val date =
                 SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
-            dataSource.insertHistoryItem(HistoryItemDisk(0, name, date))
+            dataSource.insertHistoryItem(HistoryItemDisk(0, name, date, bitmap, embeedings, type))
         }
     }
 

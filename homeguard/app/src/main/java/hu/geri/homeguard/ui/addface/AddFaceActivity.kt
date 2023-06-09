@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import hu.geri.homeguard.R
 import hu.geri.homeguard.domain.camera.CameraManager
-import hu.geri.homeguard.domain.face.util.deleteFaceImage
 import kotlinx.android.synthetic.main.activity_add_face.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -31,7 +30,7 @@ class AddFaceActivity : AppCompatActivity(), AddFaceDialog.AddFaceListener {
 
     private fun startCamera() {
         cameraManager = CameraManager(
-            owner =  (this as LifecycleOwner),
+            owner = (this as LifecycleOwner),
             context = this,
             viewPreview = addFacePreview
         )
@@ -54,7 +53,8 @@ class AddFaceActivity : AppCompatActivity(), AddFaceDialog.AddFaceListener {
 
     private fun showAddFaceDialog() {
         val dialog = viewModel.getPreview()?.let { preview ->
-            AddFaceDialog(this, preview) }
+            AddFaceDialog(this, preview)
+        }
         dialog?.show(supportFragmentManager, "ADD_FACE_DIALOG")
     }
 
@@ -64,7 +64,6 @@ class AddFaceActivity : AppCompatActivity(), AddFaceDialog.AddFaceListener {
     }
 
     override fun onDialogCancel() {
-        viewModel.cancelFaceImage()
         finish()
     }
 

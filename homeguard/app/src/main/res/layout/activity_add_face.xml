@@ -28,7 +28,7 @@
         android:layout_marginTop="40dp"
         android:hint="@string/camera_recognition_info"
         android:textAlignment="center"
-        android:textColor="@color/white"
+        android:textColor="?android:textColorPrimary"
         android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
